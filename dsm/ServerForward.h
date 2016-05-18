@@ -5,7 +5,7 @@
 #include <Responses.h>
 #include <Requests.h>
 
-ACKResponse* server_forward_page_request(PageRequest *request);
-ACKResponse* server_forward_invalidation(InvalidationRequest *request);
+PageResponse* server_forward_page_request(PageRequest *request);
+PageResponse* server_forward_invalidation(InvalidationRequest* request);
 
 #endif

@@ -13,10 +13,12 @@ AllocResponse *server_handle_alloc(AllocRequest *request) {
     return NULL;
 }
 
-void server_handle_page_request(PageRequest *request) {
+PageResponse* server_handle_page_request(PageRequest *request) {
+    return NULL;
 }
 
-void server_handle_invalidation(InvalidationRequest *request) {
+PageResponse* server_handle_invalidation(InvalidationRequest *request) {
+    return  NULL;
 }
 
 BarrierResponse *server_handle_barrier(BarrierRequest *request) {
