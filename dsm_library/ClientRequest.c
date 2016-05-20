@@ -1,15 +1,25 @@
 #include <stddef.h>
+#include <NetworkInfo.h>
+#include <malloc.h>
 #include "ClientRequest.h"
 
 // This file should contain all socket related logic to communicate with server.
 // Not sure if responses should be waited async.
 
-NodeInitResponse *client_request_node_init(NodeInitRequest *request) {
-    return NULL;
+static NetworkInfo* netInfo;
+
+NodeInitResponse *client_request_node_init(NodeInitRequest *request, NetworkInfo* networkInfo) {
+    netInfo = networkInfo;
+    NodeInitResponse* response = (NodeInitResponse*) malloc(sizeof(NodeInitResponse));
+
+    return response;
 }
 
 NodeExitResponse *client_request_node_exit(NodeExitRequest *request) {
-    return NULL;
+    NodeExitResponse* response = (NodeExitResponse*) malloc(sizeof(NodeExitResponse));
+    free(netInfo);
+
+    return response;
 }
 
 AllocResponse *client_request_alloc(AllocRequest *request) {

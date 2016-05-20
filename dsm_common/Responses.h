@@ -4,8 +4,9 @@
 
 typedef struct
 {
-    int assignedNodeId;
     int errorCode;
+    int assignedNodeId;
+    int numberOfNodes;
 } NodeInitResponse;
 
 typedef struct
