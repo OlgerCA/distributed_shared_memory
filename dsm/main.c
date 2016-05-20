@@ -22,20 +22,27 @@ int main (int argc, char *argv[])
 
 char *buffer;
 long firstAddress;
-int pagesize =4096;;
+int pagesize = 4096;
 int numPages = 4;
 
 static void handler(int sig, siginfo_t *si, void *unused)
 {
     long faultAddress = (long) si->si_addr;
     long faultingPage = (faultAddress - firstAddress) / pagesize ; //0-based
-    if (mprotect(firstAddress + pagesize * faultingPage, pagesize, PROT_READ ) == -1)
-        handle_error("mprotect");
+
+    if(faultingPage > -1 && faultingPage < numPages) {
+        if (mprotect(firstAddress + pagesize * faultingPage, pagesize, PROT_READ) == -1)
+            handle_error("mprotect");
+    }else{
+        //not a segmentation fault we should handle
+        handle_error("sigsev");
+    }
 }
 
 int main(int argc, char *argv[])
 {
     char *p; char a;
+    int* anotherPointer;// = (int*) (malloc(sizeof(int) * 5));
 
     struct sigaction sa;
     int i = 0;
@@ -82,13 +89,16 @@ int main(int argc, char *argv[])
     }
     i = 0;
 
+    //segmentation fault that we shuld not handle
+    anotherPointer[45] = 45;
+
     // will fail for now...
     while(i < numPages){
         p = buffer+(pagesize*i++);
         *(p) = 'a'; //trying to write the memory
     }
 
-
+    free(p);
     printf("Loop completed\n");
     exit(EXIT_SUCCESS);
 }
