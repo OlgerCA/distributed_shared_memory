@@ -66,6 +66,7 @@ NodeExitResponse *server_handle_node_exit(NodeExitRequest *request) {
         response->errorCode = -2;
         return response;
     }
+    clients[request->nodeId]->isActive = false;
     response->errorCode = 0;
     logger_log_message("node_exit request handled successfully.", INFO);
     return response;
