@@ -38,6 +38,8 @@ int DSM_node_init(int *argc, char ***argv, int *nodes, int *nid) {
     *nid = response->assignedNodeId;
     nodeId = response->assignedNodeId;
 
+    // TODO Init page table and other data structures
+
     free(request);
     free(response);
     return 0;
@@ -53,6 +55,8 @@ int DSM_node_exit(void) {
     free(request);
     free(response);
     nodeId = 0;
+
+    // TODO Free Page table
 
     return errorCode != 0;
 }

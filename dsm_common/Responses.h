@@ -7,6 +7,7 @@ typedef struct
     int errorCode;
     int assignedNodeId;
     int numberOfNodes;
+    long numberOfPages;
 } NodeInitResponse;
 
 typedef struct
