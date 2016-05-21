@@ -7,4 +7,4 @@ set(SOURCE_FILES main.c ServerHandle.c ServerHandle.h ServerForward.c ServerForw
 set(LIBS ${LIBS} ${GLIB_LIBRARIES})
 
 add_executable(dsm ${SOURCE_FILES})
-target_link_libraries(dsm ${LIBS})
+target_link_libraries(dsm ${LIBS} m)

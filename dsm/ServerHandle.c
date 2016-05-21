@@ -2,10 +2,13 @@
 #include <stdlib.h>
 #include <Responses.h>
 #include <Requests.h>
+#include <unistd.h>
+#include <math.h>
 #include "ServerHandle.h"
 #include "ServerPageEntry.h"
-#include "ClientEntry.h"
 #include "Logger.h"
+#include "ServerForward.h"
+#include "ClientEntry.h"
 
 static ServerPageEntry** pages;
 static ClientEntry** clients;
@@ -73,15 +76,113 @@ NodeExitResponse *server_handle_node_exit(NodeExitRequest *request) {
 }
 
 AllocResponse *server_handle_alloc(AllocRequest *request) {
-    return NULL;
+    AllocResponse* response = (AllocResponse*) malloc(sizeof(AllocResponse));
+    int pageSize = getpagesize();
+    int numberOfRequestedPages = (int) ceil(request->size * 1.0 / pageSize);
+    if (totalNumberOfPages - (currentPage + 1) < numberOfRequestedPages) {
+        logger_log_message("Not enough memory available for perform allocation.", ERROR);
+        response->errorCode = -3;
+        return response;
+    }
+    if (request->nodeId < 0 || request->nodeId >= totalNumberOfClients) {
+        logger_log_message("Invalid client ID was supplied to server.", ERROR);
+        response->errorCode = -2;
+        return response;
+    }
+
+    int i;
+    ClientEntry* requestingClient = clients[request->nodeId];
+    long startingAddress = (currentPage + 1) * pageSize;
+    for (i = 0; i < numberOfRequestedPages; i++) {
+        currentPage++;
+        pages[currentPage] = server_page_entry_new(currentPage, requestingClient);
+    }
+    response->errorCode = 0;
+    response->address = startingAddress;
+
+    return response;
+}
+
+
+InvalidationResponse* invalidate_page(int nodeId, long pageNumber, ClientEntry* client) {
+    InvalidationRequest *invalidationRequest = (InvalidationRequest *) malloc(sizeof(InvalidationRequest));
+    invalidationRequest->nodeId = nodeId;
+    invalidationRequest->pageNumber = pageNumber;
+    InvalidationResponse *response = server_forward_invalidation(invalidationRequest, client);
+    if (response->errorCode != 0)
+        logger_log_message("Error invalidating page.", ERROR);
+
+    free(invalidationRequest);
+    return response;
+}
+
+void invalidate_page_wrapper(gpointer data, gpointer user_data) {
+    ClientEntry* client = (ClientEntry*) data;
+    PageRequest* request = (PageRequest*) user_data;
+
+    if (client->clientId != request->nodeId) {
+        InvalidationResponse* response = invalidate_page(request->nodeId, request->pageNumber, client);
+        free(response);
+    }
 }
 
 PageResponse* server_handle_page_request(PageRequest *request) {
-    return NULL;
+    if (request->nodeId < 0 || request->nodeId >= totalNumberOfClients) {
+        logger_log_message("Invalid client ID was supplied to server.", ERROR);
+        PageResponse* response = (PageResponse*) malloc(sizeof(PageResponse));
+        response->errorCode = -2;
+        return response;
+    }
+    if (request->pageNumber < 0 || request->pageNumber >= currentPage + 1) {
+        logger_log_message("Invalid page number was requested.", ERROR);
+        PageResponse* response = (PageResponse*) malloc(sizeof(PageResponse));
+        response->errorCode = -4;
+        return response;
+    }
+
+    ServerPageEntry* pageEntry = pages[request->pageNumber];
+    ClientEntry* owner = pageEntry->owner;
+
+    PageResponse* response = server_forward_page_request(request, owner);
+    if (response->errorCode != 0) {
+        logger_log_message("Page forward request failed.", ERROR);
+        return response;
+    }
+
+    if (request->readOnlyMode == false) {
+        pageEntry->owner = clients[request->nodeId];
+        g_slist_foreach(pageEntry->clientsWithCopies, invalidate_page_wrapper, request);
+        g_slist_free(pageEntry->clientsWithCopies);
+        pageEntry->clientsWithCopies = NULL;
+    } else {
+        pageEntry->clientsWithCopies = g_slist_prepend(pageEntry->clientsWithCopies, clients[request->nodeId]);
+    }
+
+    return response;
 }
 
-PageResponse* server_handle_invalidation(InvalidationRequest *request) {
-    return  NULL;
+InvalidationResponse* server_handle_invalidation(InvalidationRequest *request) {
+    if (request->nodeId < 0 || request->nodeId >= totalNumberOfClients) {
+        logger_log_message("Invalid client ID was supplied to server.", ERROR);
+        InvalidationResponse* response = (InvalidationResponse*) malloc(sizeof(InvalidationResponse));
+        response->errorCode = -2;
+        return response;
+    }
+    if (request->pageNumber < 0 || request->pageNumber >= currentPage + 1) {
+        logger_log_message("Invalid page number was requested.", ERROR);
+        InvalidationResponse* response = (InvalidationResponse*) malloc(sizeof(InvalidationResponse));
+        response->errorCode = -4;
+        return response;
+    }
+
+    ServerPageEntry* pageEntry = pages[request->pageNumber];
+    g_slist_foreach(pageEntry->clientsWithCopies, invalidate_page_wrapper, request);
+    g_slist_free(pageEntry->clientsWithCopies);
+    pageEntry->clientsWithCopies = NULL;
+
+    InvalidationResponse* response = (InvalidationResponse*) malloc(sizeof(InvalidationResponse));
+    response->errorCode = 0; // TODO We might need to add an extra check.
+    return response;
 }
 
 BarrierResponse *server_handle_barrier(BarrierRequest *request) {

@@ -52,9 +52,9 @@ int DSM_node_init(int *argc, char ***argv, int *nodes, int *nid) {
     NodeInitResponse* response = client_request_node_init(request, networkInfo);
 
     if (response->errorCode != 0) {
+        free(networkInfo);
         free(request);
         free(response);
-        free(networkInfo);
         return -1;
     }
 
@@ -78,10 +78,18 @@ int DSM_node_init(int *argc, char ***argv, int *nodes, int *nid) {
     sa.sa_flags = SA_SIGINFO;
     sigemptyset(&sa.sa_mask);
     sa.sa_sigaction = handle_page_fault;
-    if (sigaction(SIGSEGV, &sa, NULL) == -1)
+    if (sigaction(SIGSEGV, &sa, NULL) == -1) {
+        free(networkInfo);
+        free(pages);
         return -1;
+    }
 
-    return mprotect(addressSpace, addressSpaceLength, PROT_NONE) == -1;
+    if (mprotect(addressSpace, addressSpaceLength, PROT_NONE) == -1) {
+        free(networkInfo);
+        free(pages);
+        return -1;
+    }
+    return 0;
 }
 
 int DSM_node_exit(void) {
@@ -93,16 +101,35 @@ int DSM_node_exit(void) {
     int errorCode = response->errorCode;
     free(request);
     free(response);
-    nodeId = 0;
 
-    // TODO Free Page table and everything else
+    if (errorCode == 0) {
+        // TODO Free Page table and everything else
+        nodeId = 0;
+        free(pages);
+        return 0;
+    }
 
-    free(pages);
-    return errorCode != 0;
+    return -1;
 }
 
 void *DSM_alloc(size_t size) {
-    return NULL;
+
+    AllocRequest* request = (AllocRequest*) malloc(sizeof(AllocRequest));
+    request->nodeId = nodeId;
+    request->size = size;
+    AllocResponse* response = client_request_alloc(request);
+
+    if (response->errorCode != 0) {
+        free(request);
+        free(response);
+        return (void*)-1;
+    }
+
+    long address = response->address;
+    free(request);
+    free(response);
+
+    return (void*)address;
 }
 
 void DSM_barrier(int barrier_id) {
