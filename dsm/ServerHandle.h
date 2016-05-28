@@ -13,6 +13,6 @@ NodeExitResponse* server_handle_node_exit(NodeExitRequest* request);
 AllocResponse* server_handle_alloc(AllocRequest* request);
 PageResponse* server_handle_page_request(PageRequest *request);
 InvalidationResponse* server_handle_invalidation(InvalidationRequest* request);
-BarrierResponse* server_handle_barrier(BarrierRequest* request);
+void server_handle_barrier(BarrierRequest* request);
 
 #endif
