@@ -1,11 +1,15 @@
 #include <sys/mman.h>
 #include <Requests.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <Responses.h>
 #include <NetworkInfo.h>
 #include <unistd.h>
 #include <signal.h>
 #include <math.h>
+#include <string.h>
+#include <errno.h>
+#include <stdio.h>
 #include "DSMClient.h"
 #include "ClientRequest.h"
 #include "ClientPageEntry.h"
@@ -73,7 +77,11 @@ int DSM_node_init(int *argc, char ***argv, int *nodes, int *nid) {
         pages[i].present = false;
 
     addressSpaceLength = (size_t) (getpagesize() * totalNumberOfPages);
-    addressSpace = mmap(NULL, addressSpaceLength, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, -1);
+    addressSpace = mmap(NULL, addressSpaceLength, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    if (addressSpace == MAP_FAILED) {
+        fprintf(stderr, "%s\n", strerror(errno));
+        return -1;
+    }
 
     struct sigaction sa;
     sa.sa_flags = SA_SIGINFO;
@@ -86,6 +94,7 @@ int DSM_node_init(int *argc, char ***argv, int *nodes, int *nid) {
     }
 
     if (mprotect(addressSpace, addressSpaceLength, PROT_NONE) == -1) {
+        fprintf(stderr, "%s\n", strerror(errno));
         free(networkInfo);
         free(pages);
         return -1;
@@ -127,10 +136,14 @@ void *DSM_alloc(size_t size) {
     }
 
     long address = response->address;
+    void* resultingAddress = (void *) ((long)addressSpace + address);
+    bool servedFromCache = response->servedFromCache;
     free(request);
     free(response);
 
-    void* resultingAddress = (void *) ((long)addressSpace + address);
+    if (servedFromCache)
+        return resultingAddress;
+
     int pageSize = getpagesize();
     int numberOfPages = (int) ceil((double)size / pageSize);
     if (mprotect(resultingAddress, (size_t) (numberOfPages * pageSize), PROT_WRITE) == -1) {

@@ -2,6 +2,8 @@
 #ifndef DISTRIBUTED_SHARED_MEMORY_RESPONSES_H
 #define DISTRIBUTED_SHARED_MEMORY_RESPONSES_H
 
+#include <stdbool.h>
+
 typedef struct
 {
     int errorCode;
@@ -19,6 +21,7 @@ typedef struct
 {
     int errorCode;
     long address;
+    bool servedFromCache;
 } AllocResponse;
 
 typedef struct
