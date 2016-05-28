@@ -5,6 +5,7 @@
 #include <NetworkInfo.h>
 #include <unistd.h>
 #include <signal.h>
+#include <math.h>
 #include "DSMClient.h"
 #include "ClientRequest.h"
 #include "ClientPageEntry.h"
@@ -129,7 +130,14 @@ void *DSM_alloc(size_t size) {
     free(request);
     free(response);
 
-    return (long)addressSpace + (void*)address;
+    void* resultingAddress = (void *) ((long)addressSpace + address);
+    int pageSize = getpagesize();
+    int numberOfPages = (int) ceil((double)size / pageSize);
+    if (mprotect(resultingAddress, (size_t) (numberOfPages * pageSize), PROT_WRITE) == -1) {
+        return (void*)-1;
+    } else {
+        return resultingAddress;
+    }
 }
 
 void DSM_barrier(int barrier_id) {
