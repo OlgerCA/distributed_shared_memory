@@ -18,10 +18,23 @@ static int currentClient;
 static long totalNumberOfPages;
 static int totalNumberOfClients;
 
+static int* mallocsPerClient;
+static long* mallocAddresses;
+static int lastMalloc;
+
+
 void server_startup(long numberOfPages, int numberOfClients) {
     logger_log_message("Starting up server...", INFO);
     currentPage = -1;
     currentClient = -1;
+
+    mallocsPerClient = (int*) malloc(sizeof(int) * numberOfClients);
+    mallocAddresses = (long*) malloc(sizeof(long) * numberOfPages);
+    lastMalloc = -1;
+    int i;
+    for (i = 0; i < numberOfClients; i++)
+        mallocsPerClient[i] = -1;
+
     pages = (ServerPageEntry**) malloc(sizeof(ServerPageEntry*) * numberOfPages);
     clients = (ClientEntry**) malloc(sizeof(ClientEntry*) * numberOfClients);
     totalNumberOfPages = numberOfPages;
@@ -38,6 +51,8 @@ void server_teardown() {
     for (i = 0; i < currentClient; i++)
         client_entry_free(clients[i]);
     free(clients);
+    free(mallocsPerClient);
+    free(mallocAddresses);
     currentPage = -1;
     currentClient = -1;
     logger_log_message("Shutting down server finished.", INFO);
@@ -77,16 +92,25 @@ NodeExitResponse *server_handle_node_exit(NodeExitRequest *request) {
 
 AllocResponse *server_handle_alloc(AllocRequest *request) {
     AllocResponse* response = (AllocResponse*) malloc(sizeof(AllocResponse));
+
+    if (request->nodeId < 0 || request->nodeId >= totalNumberOfClients) {
+        logger_log_message("Invalid client ID was supplied to server.", ERROR);
+        response->errorCode = -2;
+        return response;
+    }
+
+    if (mallocsPerClient[request->nodeId] + 1 <= lastMalloc) {
+        mallocsPerClient[request->nodeId]++;
+        response->errorCode = 0;
+        response->address = mallocAddresses[mallocsPerClient[request->nodeId]];
+        return response;
+    }
+
     int pageSize = getpagesize();
     int numberOfRequestedPages = (int) ceil(request->size * 1.0 / pageSize);
     if (totalNumberOfPages - (currentPage + 1) < numberOfRequestedPages) {
         logger_log_message("Not enough memory available for perform allocation.", ERROR);
         response->errorCode = -3;
-        return response;
-    }
-    if (request->nodeId < 0 || request->nodeId >= totalNumberOfClients) {
-        logger_log_message("Invalid client ID was supplied to server.", ERROR);
-        response->errorCode = -2;
         return response;
     }
 
@@ -99,6 +123,9 @@ AllocResponse *server_handle_alloc(AllocRequest *request) {
     }
     response->errorCode = 0;
     response->address = startingAddress;
+    mallocsPerClient[request->nodeId]++;
+    lastMalloc++;
+    mallocAddresses[lastMalloc] = startingAddress;
 
     return response;
 }

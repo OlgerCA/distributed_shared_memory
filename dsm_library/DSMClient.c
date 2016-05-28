@@ -129,7 +129,7 @@ void *DSM_alloc(size_t size) {
     free(request);
     free(response);
 
-    return (void*)address;
+    return (long)addressSpace + (void*)address;
 }
 
 void DSM_barrier(int barrier_id) {
