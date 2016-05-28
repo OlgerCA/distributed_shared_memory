@@ -154,5 +154,12 @@ void *DSM_alloc(size_t size) {
 }
 
 void DSM_barrier(int barrier_id) {
+    BarrierRequest* request = (BarrierRequest *)malloc(sizeof(BarrierRequest));
 
+    request->barrierId = barrier_id;
+    request->nodeId = nodeId;
+
+    client_request_barrier(request);
+
+    return;
 }
