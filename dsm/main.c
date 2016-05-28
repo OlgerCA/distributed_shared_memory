@@ -15,6 +15,7 @@ int main (int argc, char *argv[])
 #include <stdlib.h>
 #include <errno.h>
 #include <sys/mman.h>
+#include "FileReader.h"
 
 
 #define handle_error(msg) \
@@ -41,6 +42,13 @@ static void handler(int sig, siginfo_t *si, void *unused)
 
 int main(int argc, char *argv[])
 {
+//    ClientList* clients = readFile("/home/andres/test.txt");
+//    int i = 0;
+//    for(i; i < clients->size; i++){
+//        printf("%s:%s \n", clients->clients[i]->clientIP, clients->clients[i]->clientPort);
+//    }
+
+
     char *p; char a;
     int* anotherPointer;// = (int*) (malloc(sizeof(int) * 5));
 
