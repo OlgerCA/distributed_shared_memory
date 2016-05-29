@@ -6,12 +6,11 @@
 
 typedef struct {
     int clientId;
-    char* clientName;
-    char* clientPort;
+    int clientSocketId;
     bool isActive;
 } ClientEntry;
 
-ClientEntry* client_entry_new(int clientId, char* clientName, char* clientPort);
+ClientEntry* client_entry_new(int clientId, int clientSocketId);
 void client_entry_free(ClientEntry* this);
 
 #endif

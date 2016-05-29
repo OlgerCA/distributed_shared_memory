@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
     if (cx == -1) {
         handle_error("socket");
     }
-    server_catch(cx, MAXCONN);
+    server_catch(cx, clients->size);
     server_teardown();
 
     printf("Loop completed\n");

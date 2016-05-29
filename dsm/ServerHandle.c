@@ -64,7 +64,7 @@ void server_teardown() {
     logger_log_message("Shutting down server finished.", INFO);
 }
 
-NodeInitResponse *server_handle_node_init(NodeInitRequest *request, char* clientName, char* clientPort) {
+NodeInitResponse *server_handle_node_init(NodeInitRequest *request, int clientSocketId) {
     NodeInitResponse* response = (NodeInitResponse*) malloc(sizeof(NodeInitResponse));
     if (currentClient == totalNumberOfClients - 1) {
         logger_log_message("More clients than originally allowed tried to register.", ERROR);
@@ -72,7 +72,7 @@ NodeInitResponse *server_handle_node_init(NodeInitRequest *request, char* client
         return response;
     }
 
-    ClientEntry* newClient = client_entry_new(++currentClient, clientName, clientPort);
+    ClientEntry* newClient = client_entry_new(++currentClient, clientSocketId);
     clients[currentClient] = newClient;
 
     response->errorCode = 0;

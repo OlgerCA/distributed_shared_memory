@@ -5,6 +5,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <NetworkInfo.h>
+#include <arpa/inet.h>
 #include "ServerHandle.h"
 #include "Server.h"
 
@@ -17,7 +18,8 @@ int server_open(int sin_port, int max_conn) {
 	}
 	
 	addr_server.sin_family = AF_INET;
-	addr_server.sin_addr.s_addr = INADDR_ANY;
+	// addr_server.sin_addr.s_addr = INADDR_ANY;
+	addr_server.sin_addr.s_addr = inet_addr("127.0.0.1");
 	addr_server.sin_port = htons(sin_port);
 
 	int addr_server_size = sizeof(struct sockaddr_in);
@@ -93,22 +95,21 @@ void server_attend(int cx) {
 	// printf("recv completed: %d, %s\n", cx, message);
 	if (strcmp(action, INIT) == 0) {
 		NodeInitRequest* request = (NodeInitRequest*) malloc(sizeof(NodeInitRequest));
-		// NodeInitResponse* response = server_handle_node_init(request, "", "");
+		NodeInitResponse* response = server_handle_node_init(request, cx);
 
 		sprintf(
 			message,
 			RES_FORMAT,
-			1, // response->errorCode,
-			1, // response->assignedNodeId,
-			1, // response->numberOfNodes,
-			1, // response->numberOfPages
+			response->errorCode,
+			response->assignedNodeId,
+			response->numberOfNodes,
+			response->numberOfPages,
 			VOID
 		);
 		
 		send(cx, message, strlen(message), 0);
 		
 		free(request);
-		// free(response);
 	}
 	if (strcmp(action, EXIT) == 0) {
 		NodeExitRequest* request = (NodeExitRequest*) malloc(sizeof(NodeExitRequest));

@@ -8,6 +8,7 @@
 #include <arpa/inet.h>
 #include <NetworkInfo.h>
 #include <malloc.h>
+#include <errno.h>
 #include "ClientRequest.h"
 
 // This file should contain all socket related logic to communicate with server.
@@ -32,6 +33,7 @@ int open(char* s_addr, int sin_port) {
 	if (
 		connect(cx, (struct sockaddr*) &addr_server, addr_server_size) == -1
 	) {
+		fprintf(stderr, "%s\n", strerror(errno));
 		return -1;
 	}
 	
