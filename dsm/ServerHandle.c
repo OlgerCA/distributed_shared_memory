@@ -241,5 +241,4 @@ void server_handle_barrier(BarrierRequest *request) {
             send(clients[nodeIndex]->clientSocketId, message, strlen(message), 0);
         }
     }
-    return;
 }

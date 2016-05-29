@@ -58,6 +58,11 @@ int main(int argc, char *argv[])
     int index;
     int totalLength = 0;
 
+    if(argc <= optind){
+        printf("Executable file parameter missing\n");
+        exit(-1);
+    }
+
     //get the process name
     processName = malloc(strlen(argv[optind]) * sizeof(char));
     strcpy(processName, argv[optind]);
@@ -68,28 +73,26 @@ int main(int argc, char *argv[])
         totalLength += strlen(argv[index]) + 1;
     }
 
-    //actually copy the first extra argument
-    otherArguments = malloc(totalLength * sizeof(char));
-    strcpy(otherArguments, argv[optind]);
-    optind++;
-
-    //concat the other arguments
-    for (index = optind; index < argc; index++){
-        strcat(otherArguments, " ");
-        strcat(otherArguments, argv[index]);
-    }
-
     //print the arguments :)
     printf("Arguments: %s, %s, %d\n", hostFile, logFile, processCopies);
     printf("Executable: %s\n", processName);
-    printf("Non-option arguments: %s\n", otherArguments);
+
+    if(optind < argc){
+        //actually copy the first extra argument
+        otherArguments = malloc(totalLength * sizeof(char));
+        strcpy(otherArguments, argv[optind]);
+        optind++;
+
+        //concat the other arguments
+        for (index = optind; index < argc; index++){
+            strcat(otherArguments, " ");
+            strcat(otherArguments, argv[index]);
+        }
+        printf("Non-option arguments: %s\n", otherArguments);
+    }
 
     //read the host file
     ClientList* clients = readFile(hostFile);
-    int i = 0;
-    for(i; i < clients->size; i++){
-        printf("%s:%s \n", clients->clients[i]->clientIP, clients->clients[i]->clientPort);
-    }
 
     server_startup(NUMBER_OF_PAGES, clients->size);
     int cx = server_open(PORT, MAXCONN);
