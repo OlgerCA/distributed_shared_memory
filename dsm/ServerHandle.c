@@ -4,6 +4,10 @@
 #include <Requests.h>
 #include <unistd.h>
 #include <math.h>
+#include <NetworkInfo.h>
+#include <stdio.h>
+#include <sys/socket.h>
+#include <string.h>
 #include "ServerHandle.h"
 #include "ServerPageEntry.h"
 #include "Logger.h"
@@ -223,8 +227,18 @@ void server_handle_barrier(BarrierRequest *request) {
     barriers[barrierId]--;
     if(barriers[barrierId] == 0){
         int nodeIndex = 0;
-        for(nodeIndex; nodeIndex < totalNumberOfClients; nodeIndex++){
-            //TODO: send response to clients
+        for(; nodeIndex < totalNumberOfClients; nodeIndex++){
+            char* message = (char*) malloc(MAXDATASIZE);
+            sprintf(
+                    message,
+                    RES_FORMAT,
+                    ZERO,
+                    ZERO,
+                    ZERO,
+                    (long) ZERO,
+                    VOID
+            );
+            send(clients[nodeIndex]->clientSocketId, message, strlen(message), 0);
         }
     }
     return;
