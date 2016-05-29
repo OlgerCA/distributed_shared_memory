@@ -28,14 +28,88 @@ static size_t addressSpaceLength;
 static void handle_page_fault(int sig, siginfo_t *si, void *unused)
 {
     long faultAddress = (long) si->si_addr;
-    long faultingPage = (faultAddress - (long) addressSpace) / getpagesize() ; //0-based
+    int pageSize = getpagesize();
+    long faultingPage = (faultAddress - (long) addressSpace) / pageSize; //0-based
 
     if (faultingPage > -1 && faultingPage < totalNumberOfPages) {
         ClientPageEntry* page = &(pages[faultingPage]);
-        // TODO How dow we know if it was a read or a write? handle every possible case
+        // TODO How do we know if it was a read or a write?
+        bool read = false;
+        PageRequest pageRequest;
+        PageResponse* response = NULL;
+        pageRequest.nodeId = nodeId;
+        pageRequest.pageNumber = faultAddress;
 
-    } else {
-        // TODO how we should pass this fault to the OS?
+        if (read) { // Read scenario
+            pageRequest.readOnlyMode = 1;
+            pageRequest.ownershipOnly = 0;
+        } else { // Write scenarios
+            if (page->ownership) {
+                InvalidationRequest invalidationRequest;
+                InvalidationResponse* invalidationResponse;
+                int errorCode;
+                invalidationRequest.nodeId = nodeId;
+                invalidationRequest.pageNumber = faultingPage;
+                invalidationResponse = client_request_invalidation(&invalidationRequest);
+                errorCode = invalidationResponse->errorCode;
+                free(invalidationResponse);
+                if (errorCode == 0) {
+                    if (mprotect(addressSpace + faultingPage * pageSize, (size_t) pageSize, PROT_WRITE | PROT_READ) == -1)
+                        fprintf(stderr, "%s\n", strerror(errno));
+                    else
+                        page->isReadOnly = 0;
+                }
+                return;
+            } else if (page->present) {
+                pageRequest.readOnlyMode = 0;
+                pageRequest.ownershipOnly = 1;
+            }  else {
+                pageRequest.readOnlyMode = 0;
+                pageRequest.ownershipOnly = 0;
+            }
+        }
+
+        response =  client_request_page(&pageRequest);
+        if (response->errorCode != 0) {
+            free(response);
+            return;
+        }
+
+        if (pageRequest.ownershipOnly) {
+            if (mprotect(addressSpace + faultingPage * pageSize, (size_t) pageSize, PROT_WRITE | PROT_READ) == -1) {
+                free(response);
+                fprintf(stderr, "%s\n", strerror(errno));
+            } else {
+                page->isReadOnly = 0;
+                page->ownership = 1;
+            }
+            return;
+        }
+
+        if (pageRequest.readOnlyMode) {
+            if (mprotect(addressSpace + faultingPage * pageSize, (size_t) pageSize, PROT_READ) == -1) {
+                free(response);
+                fprintf(stderr, "%s\n", strerror(errno));
+                return;
+            }
+            page->isReadOnly = 1;
+            page->ownership = 0;
+        } else {
+            if (mprotect(addressSpace + faultingPage * pageSize, (size_t) pageSize, PROT_WRITE | PROT_READ) == -1) {
+                free(response);
+                fprintf(stderr, "%s\n", strerror(errno));
+                return;
+            }
+            page->isReadOnly = 0;
+            page->ownership = 1;
+        }
+        page->present = 1;
+
+        char* startingPageAddress = addressSpace + faultingPage * pageSize;
+        int i;
+        for (i = 0; i < pageSize; i++)
+            startingPageAddress[i] = response->pageContents[i];
+        free(response);
     }
 }
 
@@ -73,8 +147,11 @@ int DSM_node_init(int *argc, char ***argv, int *nodes, int *nid) {
     free(response);
 
     int i;
-    for (i = 0; i < totalNumberOfPages; i++)
+    for (i = 0; i < totalNumberOfPages; i++) {
         pages[i].present = false;
+        pages[i].ownership = false;
+        pages[i].isReadOnly = true;
+    }
 
     addressSpaceLength = (size_t) (getpagesize() * totalNumberOfPages);
     addressSpace = mmap(NULL, addressSpaceLength, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
@@ -116,6 +193,7 @@ int DSM_node_exit(void) {
         // TODO Free Page table and everything else
         nodeId = 0;
         free(pages);
+        munmap(addressSpace, addressSpaceLength);
         return 0;
     }
 
@@ -146,9 +224,17 @@ void *DSM_alloc(size_t size) {
 
     int pageSize = getpagesize();
     int numberOfPages = (int) ceil((double)size / pageSize);
-    if (mprotect(resultingAddress, (size_t) (numberOfPages * pageSize), PROT_WRITE) == -1) {
+    if (mprotect(resultingAddress, (size_t) (numberOfPages * pageSize), PROT_WRITE | PROT_READ) == -1) {
+        fprintf(stderr, "%s\n", strerror(errno));
         return (void*)-1;
     } else {
+        long i = 0;
+        long pageNumber = address / pageSize;
+        for (i = 0; i < numberOfPages; i++) {
+            pages[pageNumber + i].present = true;
+            pages[pageNumber + i].ownership = true;
+            pages[pageNumber + i].isReadOnly = false;
+        }
         return resultingAddress;
     }
 }
