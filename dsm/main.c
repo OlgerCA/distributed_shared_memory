@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
         printf("%s:%s \n", clients->clients[i]->clientIP, clients->clients[i]->clientPort);
     }
 
-    server_startup(clients->size, NUMBER_OF_PAGES);
+    server_startup(NUMBER_OF_PAGES, clients->size);
     int cx = server_open(PORT, MAXCONN);
     if (cx == -1) {
         handle_error("socket");
