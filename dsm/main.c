@@ -18,6 +18,7 @@ int main (int argc, char *argv[])
 #include <getopt.h>
 #include <stdbool.h>
 #include "FileReader.h"
+#include "NetworkInfo.h"
 #include "Server.h"
 
 
@@ -164,11 +165,11 @@ int main(int argc, char *argv[])
         *(p) = 'a'; //trying to write the memory
     }
 		
-    int cx = server_open(PORT, 4);
+    int cx = server_open(PORT, MAXCONN);
     if (cx == -1) {
         handle_error("socket");
     }
-    server_catch(cx, 2);
+    server_catch(cx, MAXCONN);
 
     free(p);
     printf("Loop completed\n");

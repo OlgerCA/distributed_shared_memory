@@ -140,7 +140,7 @@ void server_attend(int cx) {
 			message,
 			RES_FORMAT,
 			response->errorCode,
-			ZERO,
+			response->servedFromCache,
 			ZERO,
 			response->address,
 			VOID
