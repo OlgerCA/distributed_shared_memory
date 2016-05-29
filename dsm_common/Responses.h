@@ -27,7 +27,7 @@ typedef struct
 typedef struct
 {
     int errorCode;
-    char pageContents[4096]; //change for page size
+    char pageContents[4096]; //TODO, change for page size
 } PageResponse;
 
 typedef struct
