@@ -26,6 +26,10 @@ long totalNumberOfPages;
 void* addressSpace;
 size_t addressSpaceLength;
 
+
+int DSM_node_copy_page_contents(int faultingPage, int pageSize, PageResponse response);
+PageResponse * response = NULL; //dperez, I think is not needed that is dinamically allocated
+
 static void handle_page_fault(int sig, siginfo_t *si, void *unused)
 {
     long faultAddress = (long) si->si_addr;
@@ -37,14 +41,13 @@ static void handle_page_fault(int sig, siginfo_t *si, void *unused)
         // TODO How do we know if it was a read or a write?
         bool read = false;
         PageRequest pageRequest;
-        PageResponse* response = NULL;
-        pageRequest.nodeId = nodeId;
-        pageRequest.pageNumber = faultAddress;
 
-        if (read) { // Read scenario
-            pageRequest.readOnlyMode = 1;
-            pageRequest.ownershipOnly = 0;
-        } else { // Write scenarios
+        pageRequest.nodeId = nodeId;
+        pageRequest.pageNumber = faultingPage;
+
+        // page present scenarios, no read-faults happen if the page is present, only write-faults
+        if(page->present){
+            // if I am the owner, the fault was caused by a write operation on a page that has copies
             if (page->ownership) {
                 InvalidationRequest invalidationRequest;
                 InvalidationResponse* invalidationResponse;
@@ -61,24 +64,25 @@ static void handle_page_fault(int sig, siginfo_t *si, void *unused)
                         page->isReadOnly = 0;
                 }
                 return;
-            } else if (page->present) {
-                pageRequest.readOnlyMode = 0;
-                pageRequest.ownershipOnly = 1;
-            }  else {
-                pageRequest.readOnlyMode = 0;
-                pageRequest.ownershipOnly = 0;
+            }else{ // if I am not the owner, the fault was caused by a write operation on a page which is not mine
+                pageRequest.ownershipOnly = 1; // in such case, I will be the new owner
             }
+        }else{ // if page not present it must be requested
+            pageRequest.ownershipOnly = 0;
+            pageRequest.readOnlyMode = 1; // this works, by default saying that the page will be read only
+            // if it should have been with write privileges then another fault will happen that will update the access
         }
 
         response =  client_request_page(&pageRequest);
         if (response->errorCode != 0) {
-            free(response);
+            //free(response);
             return;
         }
 
+        // just requesting ownership, the page was not requested
         if (pageRequest.ownershipOnly) {
             if (mprotect(addressSpace + faultingPage * pageSize, (size_t) pageSize, PROT_WRITE | PROT_READ) == -1) {
-                free(response);
+                //free(response);
                 fprintf(stderr, "%s\n", strerror(errno));
             } else {
                 page->isReadOnly = 0;
@@ -87,17 +91,24 @@ static void handle_page_fault(int sig, siginfo_t *si, void *unused)
             return;
         }
 
+        // the page was requested, so its contents must be copied locally
+        if(!DSM_node_copy_page_contents(faultingPage, pageSize, *response)){
+            //free(response);
+            return;
+        }
+
+        // the page was requested in read only mode
         if (pageRequest.readOnlyMode) {
             if (mprotect(addressSpace + faultingPage * pageSize, (size_t) pageSize, PROT_READ) == -1) {
-                free(response);
+                //free(response);
                 fprintf(stderr, "%s\n", strerror(errno));
                 return;
             }
             page->isReadOnly = 1;
             page->ownership = 0;
-        } else {
+        } else { // the page was requested for me to be the new owner
             if (mprotect(addressSpace + faultingPage * pageSize, (size_t) pageSize, PROT_WRITE | PROT_READ) == -1) {
-                free(response);
+                //free(response);
                 fprintf(stderr, "%s\n", strerror(errno));
                 return;
             }
@@ -105,13 +116,24 @@ static void handle_page_fault(int sig, siginfo_t *si, void *unused)
             page->ownership = 1;
         }
         page->present = 1;
-
-        char* startingPageAddress = addressSpace + faultingPage * pageSize;
-        int i;
-        for (i = 0; i < pageSize; i++)
-            startingPageAddress[i] = response->pageContents[i];
-        free(response);
+        //free(response);
     }
+}
+
+// sets the contents of the page that the response returned to the local faulting page
+int DSM_node_copy_page_contents(int faultingPage, int pageSize, PageResponse response){
+    // sets the protection of the faulting page to read/write, to copy the contents
+    if (mprotect(addressSpace + faultingPage * pageSize, (size_t) pageSize, PROT_WRITE | PROT_READ) == -1) {
+        fprintf(stderr, "%s\n", strerror(errno));
+        return 0;
+    }
+    char* startingPageAddress = addressSpace + faultingPage * pageSize;
+    int i = 0;
+    for (; i < pageSize; i++)
+        startingPageAddress[i] = response.pageContents[i];
+    //probably with a memcopy should work too
+
+    return 1;
 }
 
 // From arguments we should receive server ip address and port, and also the client port to use.
