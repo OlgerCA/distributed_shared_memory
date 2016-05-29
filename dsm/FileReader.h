@@ -11,7 +11,7 @@
 
 typedef struct {
     char* clientIP;
-    char* clientPort;
+    char* clientUsername;
 }ClientInfo;
 
 typedef struct  {
