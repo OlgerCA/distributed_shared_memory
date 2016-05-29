@@ -20,7 +20,9 @@ int main (int argc, char *argv[])
 #include "FileReader.h"
 #include "NetworkInfo.h"
 #include "Server.h"
+#include "ServerHandle.h"
 
+#define NUMBER_OF_PAGES 4096
 
 #define handle_error(msg) \
     do { perror(msg); exit(EXIT_FAILURE); } while (0)
@@ -88,12 +90,14 @@ int main(int argc, char *argv[])
     for(i; i < clients->size; i++){
         printf("%s:%s \n", clients->clients[i]->clientIP, clients->clients[i]->clientPort);
     }
-		
+
+    server_startup(clients->size, NUMBER_OF_PAGES);
     int cx = server_open(PORT, MAXCONN);
     if (cx == -1) {
         handle_error("socket");
     }
     server_catch(cx, MAXCONN);
+    server_teardown();
 
     printf("Loop completed\n");
     exit(EXIT_SUCCESS);
