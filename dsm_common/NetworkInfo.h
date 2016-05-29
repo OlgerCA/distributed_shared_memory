@@ -2,10 +2,25 @@
 #ifndef DISTRIBUTED_SHARED_MEMORY_NETWORKINFO_H
 #define DISTRIBUTED_SHARED_MEMORY_NETWORKINFO_H
 
+#define GET "GET"
+#define INIT "INIT"
+#define EXIT "EXIT"
+#define ALLO "ALLO"
+#define PAGE "PAGE"
+#define INVA "INVA"
+#define BARR "BARR"
+#define VOID ""
+#define ZERO 0
+
+#define REQ_FORMAT "%s %s %d %d %d %ld"
+#define RES_FORMAT "%d %d %d %ld %s"
+
+#define MAXDATASIZE 32668
+
 typedef struct {
     char* serverName;
-    char* serverPort;
-    char* clientPort;
+    int serverPort;
+    int clientPort;
 } NetworkInfo;
 
 #endif

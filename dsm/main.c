@@ -18,6 +18,7 @@ int main (int argc, char *argv[])
 #include <getopt.h>
 #include <stdbool.h>
 #include "FileReader.h"
+#include "Server.h"
 
 
 #define handle_error(msg) \
@@ -162,6 +163,12 @@ int main(int argc, char *argv[])
         p = buffer+(pagesize*i++);
         *(p) = 'a'; //trying to write the memory
     }
+		
+    int cx = server_open(PORT, 4);
+    if (cx == -1) {
+        handle_error("socket");
+    }
+    server_catch(cx, 2);
 
     free(p);
     printf("Loop completed\n");

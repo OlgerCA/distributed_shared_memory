@@ -121,8 +121,8 @@ int DSM_node_init(int *argc, char ***argv, int *nodes, int *nid) {
 
     NetworkInfo* networkInfo = (NetworkInfo*) malloc(sizeof(NetworkInfo));
     networkInfo->serverName = (*argv)[1];
-    networkInfo->serverPort = (*argv)[2];
-    networkInfo->clientPort = (*argv)[3];
+    networkInfo->serverPort = atoi((*argv)[2]);
+    networkInfo->clientPort = atoi((*argv)[3]);
 
     *argc -= 4;
     *argv += 4;
