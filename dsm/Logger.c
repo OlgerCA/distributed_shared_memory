@@ -17,6 +17,7 @@ void logger_init(char *filename) {
 
 void logger_log_message(char *message, Level level) {
     fprintf(file, format, levelToString(level), getCurrentDateTime(), message);
+    fflush(file);
     puts(message);
 }
 

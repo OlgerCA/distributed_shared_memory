@@ -101,7 +101,6 @@ int main(int argc, char *argv[])
     ClientList* clients = readFile(hostFile);
 
     server_startup(NUMBER_OF_PAGES, clients->size);
-    logger_log_message("Server startup completed", INFO);
     int cx = server_open(PORT, MAXCONN);
     if (cx == -1) {
         handle_error("socket");
