@@ -10,6 +10,7 @@
 #include <string.h>
 #include <errno.h>
 #include <stdio.h>
+#include "Globals.h"
 #include "DSMClient.h"
 #include "ClientRequest.h"
 #include "ClientPageEntry.h"
@@ -17,13 +18,13 @@
 // This file should contain all memory protection and mapping logic.
 // This is the only API used by client applications.
 
-static int nodeId;
+int nodeId;
 
-static ClientPageEntry* pages;
-static long totalNumberOfPages;
+ClientPageEntry* pages;
+long totalNumberOfPages;
 
-static void* addressSpace;
-static size_t addressSpaceLength;
+void* addressSpace;
+size_t addressSpaceLength;
 
 static void handle_page_fault(int sig, siginfo_t *si, void *unused)
 {
