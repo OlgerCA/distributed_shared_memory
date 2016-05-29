@@ -34,6 +34,8 @@ InvalidationResponse *client_request_invalidation(InvalidationRequest *request) 
     return NULL;
 }
 
-BarrierResponse *client_request_barrier(BarrierRequest *request) {
-    return NULL;
+void client_request_barrier(BarrierRequest *request) {
+    //TODO send and wait for answer then just return to continue execution
+
+    return;
 }

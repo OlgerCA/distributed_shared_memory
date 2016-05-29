@@ -22,6 +22,8 @@ static int* mallocsPerClient;
 static long* mallocAddresses;
 static int lastMalloc;
 
+static int barriers[1024];
+
 
 void server_startup(long numberOfPages, int numberOfClients) {
     logger_log_message("Starting up server...", INFO);
@@ -34,6 +36,10 @@ void server_startup(long numberOfPages, int numberOfClients) {
     int i;
     for (i = 0; i < numberOfClients; i++)
         mallocsPerClient[i] = -1;
+
+    for (i = 0; i < 1024; i++){
+        barriers[i] = numberOfClients;
+    }
 
     pages = (ServerPageEntry**) malloc(sizeof(ServerPageEntry*) * numberOfPages);
     clients = (ClientEntry**) malloc(sizeof(ClientEntry*) * numberOfClients);
@@ -212,6 +218,14 @@ InvalidationResponse* server_handle_invalidation(InvalidationRequest *request) {
     return response;
 }
 
-BarrierResponse *server_handle_barrier(BarrierRequest *request) {
-    return NULL;
+void server_handle_barrier(BarrierRequest *request) {
+    int barrierId = request->barrierId;
+    barriers[barrierId]--;
+    if(barriers[barrierId] == 0){
+        int nodeIndex = 0;
+        for(nodeIndex; nodeIndex < totalNumberOfClients; nodeIndex++){
+            //TODO: send response to clients
+        }
+    }
+    return;
 }
