@@ -109,6 +109,7 @@ AllocResponse *server_handle_alloc(AllocRequest *request) {
         mallocsPerClient[request->nodeId]++;
         response->errorCode = 0;
         response->address = mallocAddresses[mallocsPerClient[request->nodeId]];
+        response->servedFromCache = true;
         return response;
     }
 
@@ -129,6 +130,7 @@ AllocResponse *server_handle_alloc(AllocRequest *request) {
     }
     response->errorCode = 0;
     response->address = startingAddress;
+    response->servedFromCache = false;
     mallocsPerClient[request->nodeId]++;
     lastMalloc++;
     mallocAddresses[lastMalloc] = startingAddress;
