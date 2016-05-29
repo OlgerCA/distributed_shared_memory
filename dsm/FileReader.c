@@ -1,7 +1,3 @@
-//
-// Created by andres on 28/05/16.
-//
-
 #include "FileReader.h"
 
 ClientList* readFile(char* fileName) {
@@ -29,9 +25,9 @@ ClientList* readFile(char* fileName) {
         port = strtok(NULL, ":");
         ClientInfo* info = (ClientInfo*) malloc(sizeof(ClientInfo));
         info->clientIP = malloc(strlen(ip) + 1);
-        info->clientPort = malloc(strlen(port) + 1);
+        info->clientUsername = malloc(strlen(port) + 1);
         strcpy(info->clientIP, ip);
-        strcpy(info->clientPort, port);
+        strcpy(info->clientUsername, port);
         clients[currentLine] = info;
         currentLine++;
     }

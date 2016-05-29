@@ -25,6 +25,9 @@ int main (int argc, char *argv[])
 
 #define NUMBER_OF_PAGES 4096
 
+#define SERVER_IP_ADDRESS "192.168.0.1"
+#define SERVER_PORT "4400"
+
 #define handle_error(msg) \
     do { perror(msg); exit(EXIT_FAILURE); } while (0)
 
@@ -36,7 +39,7 @@ int main(int argc, char *argv[])
     char *logFile = "./logFile";
     int processCopies = 1;
     char *processName;
-    char *otherArguments;
+    char *otherArguments = NULL;
 
     //magic happens here
     while((ch = (char)getopt(argc, argv, "H:l:n:")) != EOF){
@@ -99,6 +102,17 @@ int main(int argc, char *argv[])
 
     //read the host file
     ClientList* clients = readFile(hostFile);
+    int i = 0;
+    for(; i < clients->size; i++){
+        char command[1024];
+        if(otherArguments){
+            sprintf(command, "ssh %s@%s '%s %s %s %s %s'", clients->clients[i]->clientUsername, clients->clients[i]->clientIP, processName, SERVER_IP_ADDRESS, SERVER_PORT, "", otherArguments);
+        } else {
+            sprintf(command, "ssh %s@%s '%s %s %s %s'", clients->clients[i]->clientUsername, clients->clients[i]->clientIP, processName, SERVER_IP_ADDRESS, SERVER_PORT, "");
+        }
+        system(command);
+    }
+
 
     server_startup(NUMBER_OF_PAGES, clients->size);
     int cx = server_open(PORT, MAXCONN);
