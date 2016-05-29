@@ -102,23 +102,26 @@ int main(int argc, char *argv[])
 
     //read the host file
     ClientList* clients = readFile(hostFile);
-    int i = 0;
-    for(; i < clients->size; i++){
-        char command[1024];
-        if(otherArguments){
-            sprintf(command, "ssh %s@%s '%s %s %s %s %s'", clients->clients[i]->clientUsername, clients->clients[i]->clientIP, processName, SERVER_IP_ADDRESS, SERVER_PORT, "", otherArguments);
-        } else {
-            sprintf(command, "ssh %s@%s '%s %s %s %s'", clients->clients[i]->clientUsername, clients->clients[i]->clientIP, processName, SERVER_IP_ADDRESS, SERVER_PORT, "");
-        }
-        system(command);
-    }
-
 
     server_startup(NUMBER_OF_PAGES, clients->size);
     int cx = server_open(PORT, MAXCONN);
     if (cx == -1) {
         handle_error("socket");
     }
+
+    int i = 0;
+    for(; i < clients->size; i++){
+        char command[1024];
+        if(otherArguments){
+            //sprintf(command, "ssh %s@%s '%s %s %s %s %s' &", clients->clients[i]->clientUsername, clients->clients[i]->clientIP, processName, SERVER_IP_ADDRESS, SERVER_PORT, "", otherArguments);
+            sprintf(command, "ssh %s@%s '%s %s' &", clients->clients[i]->clientUsername, clients->clients[i]->clientIP, processName, otherArguments);
+        } else {
+            //sprintf(command, "ssh %s@%s '%s %s %s %s'", clients->clients[i]->clientUsername, clients->clients[i]->clientIP, processName, SERVER_IP_ADDRESS, SERVER_PORT, "");
+            sprintf(command, "ssh %s@%s '%s' &", clients->clients[i]->clientUsername, clients->clients[i]->clientIP, processName);
+        }
+        system(command);
+    }
+
     server_catch(cx, clients->size);
     server_teardown();
     logger_log_message("Server teardown completed", INFO);
