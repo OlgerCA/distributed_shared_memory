@@ -53,6 +53,7 @@ PageResponse* client_handle_page_request(PageRequest *request) {
         page->ownership = 0;
         page->present = 0;
     }
+    response->errorCode = 0;
     return response;
 }
 
