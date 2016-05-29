@@ -227,8 +227,10 @@ InvalidationResponse* server_handle_invalidation(InvalidationRequest *request) {
 void server_handle_barrier(BarrierRequest *request) {
     int barrierId = request->barrierId;
     barriers[barrierId]--;
+    logger_log_message("Barrier was requested", INFO);
     if(barriers[barrierId] == 0){
         int nodeIndex = 0;
+        logger_log_message("Barrier was completed, answering to nodes", INFO);
         for(; nodeIndex < totalNumberOfClients; nodeIndex++){
             char* message = (char*) malloc(MAXDATASIZE);
             sprintf(

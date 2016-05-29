@@ -21,6 +21,7 @@ int main (int argc, char *argv[])
 #include "NetworkInfo.h"
 #include "Server.h"
 #include "ServerHandle.h"
+#include "Logger.h"
 
 #define NUMBER_OF_PAGES 4096
 
@@ -54,6 +55,7 @@ int main(int argc, char *argv[])
                 exit(1);
         }
     }
+    logger_init(logFile);
 
     int index;
     int totalLength = 0;
@@ -67,6 +69,10 @@ int main(int argc, char *argv[])
     processName = malloc(strlen(argv[optind]) * sizeof(char));
     strcpy(processName, argv[optind]);
     optind++;
+
+    char logProcess[50];
+    sprintf(logProcess, "Executable file: %s", processName);
+    logger_log_message("Executable file", INFO);
 
     //get the size of other args to use a single char* to manage them
     for (index = optind; index < argc; index++){
@@ -95,13 +101,15 @@ int main(int argc, char *argv[])
     ClientList* clients = readFile(hostFile);
 
     server_startup(NUMBER_OF_PAGES, clients->size);
+    logger_log_message("Server startup completed", INFO);
     int cx = server_open(PORT, MAXCONN);
     if (cx == -1) {
         handle_error("socket");
     }
     server_catch(cx, clients->size);
     server_teardown();
+    logger_log_message("Server teardown completed", INFO);
+    logger_close();
 
-    printf("Loop completed\n");
     exit(EXIT_SUCCESS);
 }
