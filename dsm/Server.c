@@ -199,20 +199,8 @@ void server_attend(int cx) {
 	if (strcmp(action, BARR) == 0) {
 		BarrierRequest* request = (BarrierRequest*) malloc(sizeof(BarrierRequest));
 		request->nodeId = param1;
-    request->barrierId = param2;
+    	request->barrierId = param2;
 		server_handle_barrier(request);
-
-		sprintf(
-			message,
-			RES_FORMAT,
-			ZERO,
-			ZERO,
-			ZERO,
-			(long) ZERO,
-			VOID
-		);
-		
-		send(cx, message, strlen(message), 0);
 		
 		free(request);
 	}
