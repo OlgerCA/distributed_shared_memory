@@ -34,8 +34,8 @@ int server_open(int sin_port, int max_conn) {
 	return cx;
 }
 
-void server_catch(int cx, int max_conn) {
-	int clients[max_conn];
+void server_catch(int cx, int numClients) {
+	int clients[numClients];
 	
 	struct sockaddr addr_client;
 	unsigned int addr_client_size = sizeof(struct sockaddr);
@@ -43,7 +43,7 @@ void server_catch(int cx, int max_conn) {
 	int cx_max = -1;
 	
 	int i;
-	for (i=0; i<max_conn; i++) {
+	for (i=0; i<numClients; i++) {
 		cx_new = accept(cx, &addr_client, &addr_client_size);
 		if (cx_new > cx_max) {
 			cx_max = cx_new;
@@ -51,16 +51,16 @@ void server_catch(int cx, int max_conn) {
 		clients[i] = cx_new;
 	}
 	
-	server_multiplex(clients, max_conn, cx_max);
+	server_multiplex(clients, numClients, cx_max);
 }
 
-void server_multiplex(int clients[], int max_conn, int cx_max) {
+void server_multiplex(int clients[], int numClients, int cx_max) {
 	fd_set writers;
 	
 	int i;
 	do {
 		FD_ZERO(&writers);
-		for (i=0; i<max_conn; i++) {
+		for (i=0; i<numClients; i++) {
 			if (clients[i] == -1) {
 				continue;
 			}
@@ -68,7 +68,7 @@ void server_multiplex(int clients[], int max_conn, int cx_max) {
 		}
 		
 		select(cx_max+1, &writers, NULL, NULL, NULL);
-		for (i=0; i<max_conn; i++) {
+		for (i=0; i<numClients; i++) {
 			if (FD_ISSET(clients[i], &writers)) {
 				//sleep(2);
 				server_attend(clients[i]);

@@ -129,7 +129,7 @@ AllocResponse* client_request_alloc(AllocRequest* request) {
 	return response;
 }
 
-PageResponse* client_request_page(PageRequest* request) {
+PageResponse client_request_page(PageRequest* request) {
 	char* message = (char*) malloc(MAXDATASIZE);
 	int buffer1 = 0;
 	int buffer2 = 0;
@@ -149,16 +149,16 @@ PageResponse* client_request_page(PageRequest* request) {
 	send(server, message, strlen(message), 0);
 	recv(server, message, MAXDATASIZE, 0);
 	
-	PageResponse* response = (PageResponse*) malloc(sizeof(PageResponse));
+	PageResponse response;
 
 	sscanf(
 		message,
 		RES_FORMAT,
-		&response->errorCode,
+		&response.errorCode,
 		&buffer1,
 		&buffer2,
 		&buffer3,
-		response->pageContents
+		response.pageContents
 	);
 	
 	free(message);

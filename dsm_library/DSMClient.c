@@ -28,7 +28,7 @@ size_t addressSpaceLength;
 
 
 int DSM_node_copy_page_contents(int faultingPage, int pageSize, PageResponse response);
-PageResponse * response = NULL; //dperez, I think is not needed that is dinamically allocated
+PageResponse response;
 
 static void handle_page_fault(int sig, siginfo_t *si, void *unused)
 {
@@ -74,8 +74,7 @@ static void handle_page_fault(int sig, siginfo_t *si, void *unused)
         }
 
         response =  client_request_page(&pageRequest);
-        if (response->errorCode != 0) {
-            //free(response);
+        if (response.errorCode != 0) {
             return;
         }
 
@@ -92,8 +91,7 @@ static void handle_page_fault(int sig, siginfo_t *si, void *unused)
         }
 
         // the page was requested, so its contents must be copied locally
-        if(!DSM_node_copy_page_contents(faultingPage, pageSize, *response)){
-            //free(response);
+        if(!DSM_node_copy_page_contents(faultingPage, pageSize, response)){
             return;
         }
 
@@ -116,7 +114,6 @@ static void handle_page_fault(int sig, siginfo_t *si, void *unused)
             page->ownership = 1;
         }
         page->present = 1;
-        //free(response);
     }
 }
 
