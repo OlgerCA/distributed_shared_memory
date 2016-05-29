@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
 
     char logProcess[50];
     sprintf(logProcess, "Executable file: %s", processName);
-    logger_log_message("Executable file", INFO);
+    logger_log_message(logProcess, INFO);
 
     //get the size of other args to use a single char* to manage them
     for (index = optind; index < argc; index++){
@@ -101,7 +101,6 @@ int main(int argc, char *argv[])
     ClientList* clients = readFile(hostFile);
 
     server_startup(NUMBER_OF_PAGES, clients->size);
-    logger_log_message("Server startup completed", INFO);
     int cx = server_open(PORT, MAXCONN);
     if (cx == -1) {
         handle_error("socket");
