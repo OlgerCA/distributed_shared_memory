@@ -13,6 +13,9 @@
 #include "ClientHandle.h"
 #include "ClientRequest.h"
 
+int server = -1;
+int client = -1;
+
 int client_connect(char* s_addr, int sin_port) {
 	struct sockaddr_in addr_server;
 
@@ -79,8 +82,6 @@ void client_listener(int e) {
 	}
 
 	client_attend(cx);
-	
-	shutdown(cx, SHUT_RDWR);
 }
 
 void client_attend(int cx) {
@@ -147,4 +148,5 @@ void client_attend(int cx) {
 	free(message);
 	free(method);
 	free(action);
+	shutdown(cx, SHUT_RDWR);
 }

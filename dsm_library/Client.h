@@ -1,8 +1,8 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 
-static int server = -1;
-static int client = -1;
+extern int server;
+extern int client;
 
 int client_connect(char* s_addr, int sin_port);
 int client_listen(int sin_port, int max_conn);
