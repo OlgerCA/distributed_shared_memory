@@ -41,6 +41,29 @@ int server_open(int sin_port, int max_conn) {
 	return cx;
 }
 
+int server_connect(char* s_addr, int sin_port) {
+	struct sockaddr_in addr_server;
+
+	int cx = socket(AF_INET, SOCK_STREAM, 0);
+	if (cx == -1) {
+		return cx;
+	}
+	
+	addr_server.sin_family = AF_INET;
+	addr_server.sin_addr.s_addr = inet_addr(s_addr);
+	addr_server.sin_port = htons(sin_port);
+
+	int addr_server_size = sizeof(struct sockaddr);
+	if (
+		connect(cx, (struct sockaddr*) &addr_server, addr_server_size) == -1
+	) {
+		fprintf(stderr, "%s\n", strerror(errno));
+		return -1;
+	}
+	
+	return cx;
+}
+
 void server_catch(int cx, int numClients) {
 	int clients[numClients];
 	
