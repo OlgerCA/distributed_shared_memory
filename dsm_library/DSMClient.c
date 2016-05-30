@@ -136,16 +136,17 @@ int DSM_node_copy_page_contents(int faultingPage, int pageSize, PageResponse res
 // From arguments we should receive server ip address and port, and also the client port to use.
 int DSM_node_init(int *argc, char ***argv, int *nodes, int *nid) {
 
-    if (*argc <= 3)
+    if (*argc <= 4)
         return -1;
 
     NetworkInfo* networkInfo = (NetworkInfo*) malloc(sizeof(NetworkInfo));
     networkInfo->serverName = (*argv)[1];
     networkInfo->serverPort = atoi((*argv)[2]);
-    networkInfo->clientPort = atoi((*argv)[3]);
+    networkInfo->clientForwardIp = (*argv)[3];
+    networkInfo->clientForwardPort = atoi((*argv)[4]);
 
-    *argc -= 4;
-    *argv += 4;
+    *argc -= 5;
+    *argv += 5;
 
     NodeInitRequest* request = (NodeInitRequest*) malloc(sizeof(NodeInitRequest));
     NodeInitResponse* response = client_request_node_init(request, networkInfo);

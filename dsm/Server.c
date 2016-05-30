@@ -7,6 +7,7 @@
 #include <NetworkInfo.h>
 #include <arpa/inet.h>
 #include <errno.h>
+#include <Requests.h>
 #include "ServerHandle.h"
 #include "Server.h"
 
@@ -87,20 +88,22 @@ void server_attend(int cx) {
 	char* message = (char*) malloc(MAXDATASIZE);
 	recv(cx, message, MAXDATASIZE, 0);
 	
-	char* method = (char*) malloc(sizeof(char)*4);
+	char* ipAddress = (char*) malloc(sizeof(char) * 20);
 	char* action = (char*) malloc(sizeof(char)*4);
 	int param1 = 0;
 	int param2 = 0;
 	int param3 = 0;
 	long param4 = 0;
-	sscanf(message, REQ_FORMAT, method, action, &param1, &param2, &param3, &param4);
+	sscanf(message, REQ_FORMAT, ipAddress, action, &param1, &param2, &param3, &param4);
 	
-	if (strcmp(method, GET) != 0) {
+	/*if (strcmp(ipAddress, GET) != 0) {
 		return;
-	}
+	}*/
 	// printf("recv completed: %d, %s\n", cx, message);
 	if (strcmp(action, INIT) == 0) {
 		NodeInitRequest* request = (NodeInitRequest*) malloc(sizeof(NodeInitRequest));
+		strcpy(request->forwardAddress, ipAddress);
+		request->forwardPort = param1;
 		NodeInitResponse* response = server_handle_node_init(request, cx);
 
 		sprintf(
@@ -213,6 +216,6 @@ void server_attend(int cx) {
 	}
 
 	free(message);
-	free(method);
+	free(ipAddress);
 	free(action);
 }

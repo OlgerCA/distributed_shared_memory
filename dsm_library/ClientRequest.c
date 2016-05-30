@@ -18,13 +18,14 @@ static NetworkInfo* netInfo;
 
 NodeInitResponse* client_request_node_init(NodeInitRequest* request, NetworkInfo* networkInfo) {
 	netInfo = networkInfo;
-	char* buffer1 = (char*) malloc(2);
+	char* buffer1 = (char*) malloc(20);
+	int buffer2 = 0;
 
 	server = client_connect(netInfo->serverName, netInfo->serverPort);
-	client = client_listen(netInfo->clientPort, MAXCONN);
+	client = client_listen(netInfo->clientForwardPort, MAXCONN);
 	char* message = (char*) malloc(MAXDATASIZE);
 	
-	sprintf(message, REQ_FORMAT, GET, INIT, ZERO, ZERO, ZERO, (long) ZERO);
+	sprintf(message, REQ_FORMAT, networkInfo->clientForwardIp, INIT, networkInfo->clientForwardPort, ZERO, ZERO, (long) ZERO);
 	
 	send(server, message, strlen(message), 0);
 	recv(server, message, MAXDATASIZE, 0);

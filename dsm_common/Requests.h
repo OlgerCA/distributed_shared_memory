@@ -4,6 +4,8 @@
 
 typedef struct
 {
+    char forwardAddress[20];
+    int forwardPort;
 } NodeInitRequest;
 
 typedef struct

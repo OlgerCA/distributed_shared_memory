@@ -119,7 +119,7 @@ int main(int argc, char *argv[])
             //sprintf(command, "ssh %s@%s '%s %s %s %s'", clients->clients[i]->clientUsername, clients->clients[i]->clientIP, processName, SERVER_IP_ADDRESS, SERVER_PORT, "");
             sprintf(command, "ssh %s@%s '%s' &", clients->clients[i]->clientUsername, clients->clients[i]->clientIP, processName);
         }
-        system(command);
+        // system(command);
     }
 
     server_catch(cx, clients->size);

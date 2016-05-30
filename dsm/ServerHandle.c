@@ -78,7 +78,7 @@ NodeInitResponse *server_handle_node_init(NodeInitRequest *request, int clientSo
         return response;
     }
 
-    ClientEntry* newClient = client_entry_new(++currentClient, clientSocketId);
+    ClientEntry* newClient = client_entry_new(++currentClient, clientSocketId, request->forwardAddress, request->forwardPort);
     clients[currentClient] = newClient;
 
     response->errorCode = 0;

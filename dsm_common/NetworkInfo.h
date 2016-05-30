@@ -21,7 +21,8 @@
 typedef struct {
     char* serverName;
     int serverPort;
-    int clientPort;
+    char* clientForwardIp;
+    int clientForwardPort;
 } NetworkInfo;
 
 #endif
