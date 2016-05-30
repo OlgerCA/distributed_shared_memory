@@ -114,7 +114,13 @@ int main(int argc, char *argv[])
         char command[1024];
         if(otherArguments){
             //sprintf(command, "ssh %s@%s '%s %s %s %s %s' &", clients->clients[i]->clientUsername, clients->clients[i]->clientIP, processName, SERVER_IP_ADDRESS, SERVER_PORT, "", otherArguments);
-            sprintf(command, "ssh %s@%s '%s %s' &", clients->clients[i]->clientUsername, clients->clients[i]->clientIP, processName, otherArguments);
+            sprintf(command, "ssh %s@%s '%s %s %s %s' &",
+                    clients->clients[i]->clientUsername,
+                    clients->clients[i]->clientIP,
+                    processName,
+                    otherArguments,
+                    clients->clients[i]->clientIP,
+                    clients->clients[i]->clientPort); //TODO, incremetar port si hay mas procesos a crear que maquinas disponibles
         } else {
             //sprintf(command, "ssh %s@%s '%s %s %s %s'", clients->clients[i]->clientUsername, clients->clients[i]->clientIP, processName, SERVER_IP_ADDRESS, SERVER_PORT, "");
             sprintf(command, "ssh %s@%s '%s' &", clients->clients[i]->clientUsername, clients->clients[i]->clientIP, processName);
