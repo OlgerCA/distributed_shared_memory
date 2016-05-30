@@ -33,6 +33,7 @@ typedef struct
 typedef struct
 {
     int errorCode;
+    long pageNumber;
 } InvalidationResponse;
 
 typedef struct
