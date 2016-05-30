@@ -80,7 +80,7 @@ void client_listener(int e) {
 
 	client_attend(cx);
 	
-	shutdown(cx, 2);
+	shutdown(cx, SHUT_RDWR);
 }
 
 void client_attend(int cx) {

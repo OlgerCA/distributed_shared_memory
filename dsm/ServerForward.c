@@ -7,8 +7,11 @@
 #include <Responses.h>
 #include "ServerForward.h"
 #include "ClientEntry.h"
+#include "Server.h"
 
 PageResponse* server_forward_page_request(PageRequest *request, ClientEntry* owner) {
+    int cx = server_connect(owner->forwardIpAddress, owner->forwardPort);
+    
     char* message = (char*) malloc(MAXDATASIZE);
     int buffer1 = 0;
     int buffer2 = 0;
@@ -25,8 +28,8 @@ PageResponse* server_forward_page_request(PageRequest *request, ClientEntry* own
             request->pageNumber
     );
 
-    send(owner->clientSocketId, message, strlen(message), 0);
-    recv(owner->clientSocketId, message, MAXDATASIZE, 0);
+    send(cx, message, strlen(message), 0);
+    recv(cx, message, MAXDATASIZE, 0);
 
     PageResponse* response = (PageResponse*) malloc(sizeof(PageResponse));
 
@@ -41,11 +44,14 @@ PageResponse* server_forward_page_request(PageRequest *request, ClientEntry* own
     );
 
     free(message);
+    shutdown(cx, SHUT_RDWR);
 
     return response;
 }
 
 InvalidationResponse* server_forward_invalidation(InvalidationRequest *request, ClientEntry* client) {
+    int cx = server_connect(client->forwardIpAddress, client->forwardPort);
+    
     char* message = (char*) malloc(MAXDATASIZE);
     int buffer1 = 0;
     int buffer2 = 0;
@@ -54,8 +60,8 @@ InvalidationResponse* server_forward_invalidation(InvalidationRequest *request, 
 
     sprintf(message, REQ_FORMAT, GET, INVA, request->nodeId, ZERO, ZERO, request->pageNumber);
 
-    send(client->clientSocketId, message, strlen(message), 0);
-    recv(client->clientSocketId, message, MAXDATASIZE, 0);
+    send(cx, message, strlen(message), 0);
+    recv(cx, message, MAXDATASIZE, 0);
 
     InvalidationResponse* response = (InvalidationResponse*) malloc(sizeof(InvalidationResponse));
 
@@ -71,6 +77,7 @@ InvalidationResponse* server_forward_invalidation(InvalidationRequest *request, 
 
     free(buffer4);
     free(message);
+    shutdown(cx, SHUT_RDWR);
 
     return response;
 }
