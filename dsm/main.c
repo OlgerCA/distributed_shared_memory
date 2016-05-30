@@ -124,8 +124,6 @@ int main(int argc, char *argv[])
 
     server_catch(cx, clients->size);
     server_teardown();
-    logger_log_message("Server teardown completed", INFO);
-    logger_close();
 
     exit(EXIT_SUCCESS);
 }

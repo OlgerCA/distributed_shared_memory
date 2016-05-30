@@ -6,11 +6,15 @@
 #include <netinet/in.h>
 #include <NetworkInfo.h>
 #include <arpa/inet.h>
+#include <errno.h>
 #include "ServerHandle.h"
 #include "Server.h"
 
+int completedNodes;
+
 int server_open(int sin_port, int max_conn) {
 	struct sockaddr_in addr_server;
+	completedNodes = 0;
 
 	int cx = socket(AF_INET, SOCK_STREAM, 0);
 	if (cx == -1) {
@@ -24,10 +28,12 @@ int server_open(int sin_port, int max_conn) {
 
 	int addr_server_size = sizeof(struct sockaddr_in);
 	if (bind(cx, (struct sockaddr*) &addr_server, addr_server_size) == -1) {
+        fprintf(stderr, "%s\n", strerror(errno));
 		return -1;
 	}
 
 	if (listen(cx, max_conn)) {
+        fprintf(stderr, "%s\n", strerror(errno));
 		return -1;
 	}
 
@@ -74,7 +80,7 @@ void server_multiplex(int clients[], int numClients, int cx_max) {
 				server_attend(clients[i]);
 			}
 		}
-	} while (1);
+	} while (completedNodes < numClients);
 }
 
 void server_attend(int cx) {
@@ -130,6 +136,7 @@ void server_attend(int cx) {
 		
 		free(request);
 		free(response);
+		completedNodes++;
 	}
 	if (strcmp(action, ALLO) == 0) {
 		AllocRequest* request = (AllocRequest*) malloc(sizeof(AllocRequest));

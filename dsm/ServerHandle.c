@@ -66,6 +66,8 @@ void server_teardown() {
     currentPage = -1;
     currentClient = -1;
     logger_log_message("Shutting down server finished.", INFO);
+    logger_log_message("Server teardown completed", INFO);
+    logger_close();
 }
 
 NodeInitResponse *server_handle_node_init(NodeInitRequest *request, int clientSocketId) {

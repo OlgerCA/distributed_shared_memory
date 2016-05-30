@@ -3,6 +3,7 @@
 
 #define PORT 4400
 
+extern int completedNodes;
 int server_open(int sin_port, int max_conn);
 void server_catch(int cx, int max_conn);
 void server_multiplex(int clients[], int max_conn, int cx_max);
