@@ -109,7 +109,7 @@ AllocResponse* client_request_alloc(AllocRequest* request) {
 }
 
 PageResponse client_request_page(PageRequest* request) {
-	char* message = (char*) malloc(MAXDATASIZE);
+	char message[MAXDATASIZE];
 	int buffer1 = 0;
 	int buffer2 = 0;
 	long buffer3 = 0;
@@ -124,7 +124,7 @@ PageResponse client_request_page(PageRequest* request) {
 		request->readOnlyMode,
 		request->pageNumber
 	);
-	
+
 	send(server, message, strlen(message) + 1, 0);
 	recv(server, message, MAXDATASIZE, 0);
 	
@@ -143,17 +143,17 @@ PageResponse client_request_page(PageRequest* request) {
 	char * contentBeforePage = strchr(message, '&');
 	memcpy(response.pageContents, contentBeforePage +1, getpagesize());
 
-	free(message);
+	//free(message);
 
 	return response;
 }
 
 InvalidationResponse* client_request_invalidation(InvalidationRequest* request) {
-	char* message = (char*) malloc(MAXDATASIZE);
+	char message[MAXDATASIZE];
 	int buffer1 = 0;
 	int buffer2 = 0;
 	long buffer3 = 0;
-	char* buffer4 = (char*) malloc(2);
+	char buffer4[2];
 	
 	sprintf(message, REQ_FORMAT, GET, INVA, request->nodeId, ZERO, ZERO, request->pageNumber);
 	
@@ -172,8 +172,8 @@ InvalidationResponse* client_request_invalidation(InvalidationRequest* request) 
 		buffer4
 	);
 	
-	free(buffer4);
-	free(message);
+	//free(buffer4);
+	//free(message);
 
 	return response;
 }

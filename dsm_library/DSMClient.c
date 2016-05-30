@@ -10,6 +10,7 @@
 #include <string.h>
 #include <errno.h>
 #include <stdio.h>
+#include <malloc.h>
 #include "Globals.h"
 #include "DSMClient.h"
 #include "ClientRequest.h"
@@ -176,6 +177,7 @@ int DSM_node_init(int *argc, char ***argv, int *nodes, int *nid) {
 
     addressSpaceLength = (size_t) (getpagesize() * totalNumberOfPages);
     addressSpace = mmap(NULL, addressSpaceLength, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    //addressSpace  = memalign(getpagesize(), addressSpaceLength);
     if (addressSpace == MAP_FAILED) {
         fprintf(stderr, "%s\n", strerror(errno));
         return -1;
