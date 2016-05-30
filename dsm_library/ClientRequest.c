@@ -7,44 +7,21 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <NetworkInfo.h>
-#include <malloc.h>
 #include <errno.h>
 #include "ClientRequest.h"
+#include "Client.h"
 
 // This file should contain all socket related logic to communicate with server.
 // Not sure if responses should be waited async.
 
 static NetworkInfo* netInfo;
-static int server = -1;
-
-int open(char* s_addr, int sin_port) {
-	struct sockaddr_in addr_server;
-
-	int cx = socket(AF_INET, SOCK_STREAM, 0);
-	if (cx == -1) {
-		return cx;
-	}
-	
-	addr_server.sin_family = AF_INET;
-	addr_server.sin_addr.s_addr = inet_addr(s_addr);
-	addr_server.sin_port = htons(sin_port);
-
-	int addr_server_size = sizeof(struct sockaddr);
-	if (
-		connect(cx, (struct sockaddr*) &addr_server, addr_server_size) == -1
-	) {
-		fprintf(stderr, "%s\n", strerror(errno));
-		return -1;
-	}
-	
-	return cx;
-}
 
 NodeInitResponse* client_request_node_init(NodeInitRequest* request, NetworkInfo* networkInfo) {
 	netInfo = networkInfo;
 	char* buffer1 = (char*) malloc(2);
 
-	server = open(netInfo->serverName, netInfo->serverPort);
+	server = client_connect(netInfo->serverName, netInfo->serverPort);
+	client = client_listen(netInfo->clientPort, MAXCONN);
 	char* message = (char*) malloc(MAXDATASIZE);
 	
 	sprintf(message, REQ_FORMAT, GET, INIT, ZERO, ZERO, ZERO, (long) ZERO);
@@ -117,7 +94,7 @@ AllocResponse* client_request_alloc(AllocRequest* request) {
 		message,
 		RES_FORMAT,
 		&response->errorCode,
-		&response->servedFromCache,
+		(int*) &response->servedFromCache,
 		&buffer1,
 		&response->address,
 		buffer2

@@ -4,6 +4,7 @@
 
 #include "Requests.h"
 #include "Responses.h"
+#include "NetworkInfo.h"
 
 NodeInitResponse* client_request_node_init(NodeInitRequest* request, NetworkInfo* networkInfo);
 NodeExitResponse* client_request_node_exit(NodeExitRequest* request);
