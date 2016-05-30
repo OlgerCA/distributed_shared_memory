@@ -15,8 +15,6 @@
 // Not sure if responses should be waited async.
 
 static NetworkInfo* netInfo;
-static int server = -1;
-static int client = -1;
 
 NodeInitResponse* client_request_node_init(NodeInitRequest* request, NetworkInfo* networkInfo) {
 	netInfo = networkInfo;

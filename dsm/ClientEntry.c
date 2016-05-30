@@ -7,6 +7,7 @@ ClientEntry *client_entry_new(int clientId, int clientSocketId, char* forwardIpA
     this->clientId = clientId;
     this->clientSocketId = clientSocketId;
     strcpy(this->forwardIpAddress, forwardIpAddress);
+    this->forwardPort = forwardPort;
     this->isActive = true;
     return this;
 }
