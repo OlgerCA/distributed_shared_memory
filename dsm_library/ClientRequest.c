@@ -8,6 +8,7 @@
 #include <arpa/inet.h>
 #include <NetworkInfo.h>
 #include <errno.h>
+#include <zconf.h>
 #include "ClientRequest.h"
 #include "Client.h"
 
@@ -138,7 +139,10 @@ PageResponse client_request_page(PageRequest* request) {
 		&buffer3,
 		response.pageContents
 	);
-	
+
+	char * contentBeforePage = strchr(message, '&');
+	memcpy(response.pageContents, contentBeforePage +1, getpagesize());
+
 	free(message);
 
 	return response;

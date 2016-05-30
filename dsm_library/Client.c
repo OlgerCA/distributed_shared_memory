@@ -116,12 +116,12 @@ void client_attend(int cx) {
 			ZERO,
 			ZERO,
 			(long) ZERO,
-			VOID
+			"&"
 		);
-		int prevLength = strlen(message) ;
-		memcpy(message + prevLength+1, response->pageContents, getpagesize());
+		char * contentBeforePage = strchr(message, '&');
+		memcpy(contentBeforePage +1 , response->pageContents, getpagesize());
 
-		send(cx, message, prevLength + getpagesize(), 0);
+		send(cx, message, contentBeforePage - message + getpagesize() + 1, 0);
 		
 		free(request);
 		free(response);

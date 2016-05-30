@@ -5,6 +5,7 @@
 #include <sys/socket.h>
 #include <string.h>
 #include <Responses.h>
+#include <zconf.h>
 #include "ServerForward.h"
 #include "ClientEntry.h"
 #include "Server.h"
@@ -42,6 +43,11 @@ PageResponse* server_forward_page_request(PageRequest *request, ClientEntry* own
             &buffer3,
             response->pageContents
     );
+
+    char * contentBeforePage = strchr(message, '&');
+    memcpy(response->pageContents, contentBeforePage +1, getpagesize());
+
+    send(cx, message, contentBeforePage - message + getpagesize() + 1, 0);
 
     free(message);
     shutdown(cx, SHUT_RDWR);
