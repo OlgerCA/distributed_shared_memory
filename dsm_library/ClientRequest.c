@@ -27,7 +27,7 @@ NodeInitResponse* client_request_node_init(NodeInitRequest* request, NetworkInfo
 	
 	sprintf(message, REQ_FORMAT, networkInfo->clientForwardIp, INIT, networkInfo->clientForwardPort, ZERO, ZERO, (long) ZERO);
 	
-	send(server, message, strlen(message), 0);
+	send(server, message, strlen(message) + 1, 0);
 	recv(server, message, MAXDATASIZE, 0);
 	
 	NodeInitResponse* response = (NodeInitResponse*) malloc(sizeof(NodeInitResponse));
@@ -57,7 +57,7 @@ NodeExitResponse* client_request_node_exit(NodeExitRequest* request) {
 	
 	sprintf(message, REQ_FORMAT, GET, EXIT, request->nodeId, ZERO, ZERO, (long) ZERO);
 	
-	send(server, message, strlen(message), 0);
+	send(server, message, strlen(message) + 1, 0);
 	recv(server, message, MAXDATASIZE, 0);
 	
 	NodeExitResponse* response = (NodeExitResponse*) malloc(sizeof(NodeExitResponse));
@@ -86,7 +86,7 @@ AllocResponse* client_request_alloc(AllocRequest* request) {
 	
 	sprintf(message, REQ_FORMAT, GET, ALLO, request->nodeId, ZERO, ZERO, request->size);
 	
-	send(server, message, strlen(message), 0);
+	send(server, message, strlen(message) + 1, 0);
 	recv(server, message, MAXDATASIZE, 0);
 	
 	AllocResponse* response = (AllocResponse*) malloc(sizeof(AllocResponse));
@@ -124,7 +124,7 @@ PageResponse client_request_page(PageRequest* request) {
 		request->pageNumber
 	);
 	
-	send(server, message, strlen(message), 0);
+	send(server, message, strlen(message) + 1, 0);
 	recv(server, message, MAXDATASIZE, 0);
 	
 	PageResponse response;
@@ -153,7 +153,7 @@ InvalidationResponse* client_request_invalidation(InvalidationRequest* request) 
 	
 	sprintf(message, REQ_FORMAT, GET, INVA, request->nodeId, ZERO, ZERO, request->pageNumber);
 	
-	send(server, message, strlen(message), 0);
+	send(server, message, strlen(message) + 1, 0);
 	recv(server, message, MAXDATASIZE, 0);
 	
 	InvalidationResponse* response = (InvalidationResponse*) malloc(sizeof(InvalidationResponse));
@@ -183,7 +183,7 @@ BarrierResponse* client_request_barrier(BarrierRequest* request) {
 	
 	sprintf(message, REQ_FORMAT, GET, BARR, request->nodeId, request->barrierId, ZERO, (long) ZERO);
 	
-	send(server, message, strlen(message), 0);
+	send(server, message, strlen(message) + 1, 0);
 	recv(server, message, MAXDATASIZE, 0);
 	
 	BarrierResponse* response = (BarrierResponse*) malloc(sizeof(BarrierResponse));
