@@ -2,7 +2,7 @@
 
 ClientList* readFile(char* fileName) {
     FILE *file;
-    char content[1024], *ip, *port, *line;
+    char content[1024], *ip, *port, *username, *line;
     char ch;
     int lines = 0, currentLine = 0;
     ClientList *list = (ClientList*) malloc(sizeof(ClientList));
@@ -23,11 +23,14 @@ ClientList* readFile(char* fileName) {
         line = strtok(content, "\n");
         ip = strtok(line, ":");
         port = strtok(NULL, ":");
+        username = strtok(NULL, ":");
         ClientInfo* info = (ClientInfo*) malloc(sizeof(ClientInfo));
         info->clientIP = malloc(strlen(ip) + 1);
-        info->clientUsername = malloc(strlen(port) + 1);
+        info->clientPort = malloc(strlen(port) + 1);
+        info->clientUsername = malloc(strlen(username) + 1);
         strcpy(info->clientIP, ip);
-        strcpy(info->clientUsername, port);
+        strcpy(info->clientPort, port);
+        strcpy(info->clientUsername, username);
         clients[currentLine] = info;
         currentLine++;
     }
