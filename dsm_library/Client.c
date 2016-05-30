@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <fcntl.h>
+#include <Responses.h>
 #include "Client.h"
 #include "ClientHandle.h"
 #include "ClientRequest.h"
@@ -115,10 +116,12 @@ void client_attend(int cx) {
 			ZERO,
 			ZERO,
 			(long) ZERO,
-			response->pageContents
+			VOID
 		);
-		
-		send(cx, message, strlen(message), 0);
+		int prevLength = strlen(message) ;
+		memcpy(message + prevLength+1, response->pageContents, getpagesize());
+
+		send(cx, message, prevLength + getpagesize(), 0);
 		
 		free(request);
 		free(response);

@@ -8,6 +8,7 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <Requests.h>
+#include <zconf.h>
 #include "ServerHandle.h"
 #include "Server.h"
 
@@ -200,9 +201,14 @@ void server_attend(int cx) {
 			ZERO,
 			ZERO,
 			(long) ZERO,
-			response->pageContents
+			VOID
 		);
-		
+
+		int prevLength = strlen(message) ;
+		memcpy(message + prevLength+1, response->pageContents, getpagesize());
+
+		send(cx, message, prevLength + getpagesize(), 0);
+
 		send(cx, message, strlen(message), 0);
 		
 		free(request);
