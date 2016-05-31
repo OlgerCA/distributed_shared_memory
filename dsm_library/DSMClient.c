@@ -33,6 +33,7 @@ PageResponse response;
 
 static void handle_page_fault(int sig, siginfo_t *si, void *unused)
 {
+    /*
     long faultAddress = (long) si->si_addr;
     int pageSize = getpagesize();
     long faultingPage = (faultAddress - (long) addressSpace) / pageSize; //0-based
@@ -115,7 +116,13 @@ static void handle_page_fault(int sig, siginfo_t *si, void *unused)
             page->ownership = 1;
         }
         page->present = 1;
-    }
+    }*/
+    long faultAddress = (long) si->si_addr;
+    int pageSize = getpagesize();
+    long faultingPage = (faultAddress - (long) addressSpace) / pageSize;
+
+    if (mprotect(addressSpace + faultingPage * pageSize, (size_t) pageSize, PROT_WRITE | PROT_READ) == -1)
+        fprintf(stderr, "%s\n", strerror(errno));
 }
 
 // sets the contents of the page that the response returned to the local faulting page
@@ -199,6 +206,8 @@ int DSM_node_init(int *argc, char ***argv, int *nodes, int *nid) {
         free(pages);
         return -1;
     }
+
+
     return 0;
 }
 
@@ -263,12 +272,13 @@ void *DSM_alloc(size_t size) {
 }
 
 void DSM_barrier(int barrier_id) {
-    BarrierRequest* request = (BarrierRequest *)malloc(sizeof(BarrierRequest));
+    BarrierRequest request;
 
-    request->barrierId = barrier_id;
-    request->nodeId = nodeId;
+    request.barrierId = barrier_id;
+    request.nodeId = nodeId;
 
-    client_request_barrier(request);
+    BarrierResponse* response = client_request_barrier(request);
 
+    free(response); // TODO, we are doing nothing with this response... should it be handled differently?
     return;
 }

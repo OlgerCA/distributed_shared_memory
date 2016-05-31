@@ -19,12 +19,12 @@ static NetworkInfo* netInfo;
 
 NodeInitResponse* client_request_node_init(NodeInitRequest* request, NetworkInfo* networkInfo) {
 	netInfo = networkInfo;
-	char* buffer1 = (char*) malloc(20);
+	char buffer1[20];
 	int buffer2 = 0;
 
 	server = client_connect(netInfo->serverName, netInfo->serverPort);
 	client = client_listen(netInfo->clientForwardPort, MAXCONN);
-	char* message = (char*) malloc(MAXDATASIZE);
+	char message [MAXDATASIZE];
 	
 	sprintf(message, REQ_FORMAT, networkInfo->clientForwardIp, INIT, networkInfo->clientForwardPort, ZERO, ZERO, (long) ZERO);
 	
@@ -43,18 +43,15 @@ NodeInitResponse* client_request_node_init(NodeInitRequest* request, NetworkInfo
 		buffer1
 	);
 
-	free(buffer1);
-	free(message);
-
 	return response;
 }
 
 NodeExitResponse* client_request_node_exit(NodeExitRequest* request) {
-	char* message = (char*) malloc(MAXDATASIZE);
+	char message [MAXDATASIZE];
 	int buffer1 = 0;
 	int buffer2 = 0;
 	long buffer3 = 0;
-	char* buffer4 = (char*) malloc(2);
+	char buffer4[2];
 	
 	sprintf(message, REQ_FORMAT, GET, EXIT, request->nodeId, ZERO, ZERO, (long) ZERO);
 	
@@ -72,9 +69,7 @@ NodeExitResponse* client_request_node_exit(NodeExitRequest* request) {
 		&buffer3,
 		buffer4
 	);
-	
-	free(buffer4);
-	free(message);
+
 	free(netInfo);
 
 	return response;
@@ -178,14 +173,14 @@ InvalidationResponse* client_request_invalidation(InvalidationRequest* request) 
 	return response;
 }
 
-BarrierResponse* client_request_barrier(BarrierRequest* request) {
-	char* message = (char*) malloc(MAXDATASIZE);
+BarrierResponse* client_request_barrier(BarrierRequest request) {
+	char message[MAXDATASIZE];
 	int buffer1 = 0;
 	int buffer2 = 0;
 	long buffer3 = 0;
-	char* buffer4 = (char*) malloc(2);
+	char buffer4[2];
 	
-	sprintf(message, REQ_FORMAT, GET, BARR, request->nodeId, request->barrierId, ZERO, (long) ZERO);
+	sprintf(message, REQ_FORMAT, GET, BARR, request.nodeId, request.barrierId, ZERO, (long) ZERO);
 	
 	send(server, message, strlen(message) + 1, 0);
 	recv(server, message, MAXDATASIZE, 0);
@@ -201,9 +196,6 @@ BarrierResponse* client_request_barrier(BarrierRequest* request) {
 		&buffer3,
 		buffer4
 	);
-	
-	free(buffer4);
-	free(message);
 
 	return response;
 }
