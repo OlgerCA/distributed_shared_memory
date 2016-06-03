@@ -9,9 +9,15 @@
 #include "ServerForward.h"
 #include "ClientEntry.h"
 #include "Server.h"
+#include "Logger.h"
 
 PageResponse* server_forward_page_request(PageRequest *request, ClientEntry* owner) {
     int cx = server_connect(owner->forwardIpAddress, owner->forwardPort);
+
+    char logMessage[100];
+    sprintf(logMessage, "Forwarding request to %s", owner->forwardIpAddress);
+
+    logger_log_message(logMessage, INFO);
     
     char* message = (char*) malloc(MAXDATASIZE);
     int buffer1 = 0;
@@ -57,6 +63,11 @@ PageResponse* server_forward_page_request(PageRequest *request, ClientEntry* own
 
 InvalidationResponse* server_forward_invalidation(InvalidationRequest *request, ClientEntry* client) {
     int cx = server_connect(client->forwardIpAddress, client->forwardPort);
+
+    char logMessage[100];
+    sprintf(logMessage, "Invalidating page to %d", client->clientId);
+
+    logger_log_message(logMessage, INFO);
     
     char* message = (char*) malloc(MAXDATASIZE);
     int buffer1 = 0;

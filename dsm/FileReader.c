@@ -1,6 +1,8 @@
 #include "FileReader.h"
+#include "Logger.h"
 
 ClientList* readFile(char* fileName) {
+    logger_log_message("Reading client config file", INFO);
     FILE *file;
     char content[1024], *ip, *port, *username, *line;
     char ch;
@@ -26,10 +28,9 @@ ClientList* readFile(char* fileName) {
         username = strtok(NULL, ":");
         ClientInfo* info = (ClientInfo*) malloc(sizeof(ClientInfo));
         info->clientIP = malloc(strlen(ip) + 1);
-        info->clientPort = malloc(strlen(port) + 1);
         info->clientUsername = malloc(strlen(username) + 1);
         strcpy(info->clientIP, ip);
-        strcpy(info->clientPort, port);
+        info->clientPort = strtol(port, NULL, 0);
         strcpy(info->clientUsername, username);
         clients[currentLine] = info;
         currentLine++;
