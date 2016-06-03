@@ -30,12 +30,12 @@ int server_open(int sin_port, int max_conn) {
 
 	int addr_server_size = sizeof(struct sockaddr_in);
 	if (bind(cx, (struct sockaddr*) &addr_server, addr_server_size) == -1) {
-		fprintf(stderr, "%s\n", strerror(errno));
+        fprintf(stderr, "%s\n", strerror(errno));
 		return -1;
 	}
 
 	if (listen(cx, max_conn)) {
-		fprintf(stderr, "%s\n", strerror(errno));
+        fprintf(stderr, "%s\n", strerror(errno));
 		return -1;
 	}
 
@@ -80,8 +80,6 @@ void server_catch(int cx, int numClients) {
 			cx_max = cx_new;
 		}
 		clients[i] = cx_new;
-
-		server_attend(cx_new);
 	}
 	
 	server_multiplex(clients, numClients, cx_max);
@@ -103,7 +101,7 @@ void server_multiplex(int clients[], int numClients, int cx_max) {
 		select(cx_max+1, &writers, NULL, NULL, NULL);
 		for (i=0; i<numClients; i++) {
 			if (FD_ISSET(clients[i], &writers)) {
-				// sleep(2);
+				//sleep(2);
 				server_attend(clients[i]);
 			}
 		}
@@ -170,7 +168,7 @@ void server_attend(int cx) {
 	if (strcmp(action, ALLO) == 0) {
 		AllocRequest* request = (AllocRequest*) malloc(sizeof(AllocRequest));
 		request->nodeId = param1;
-		request->size = param4;
+    request->size = param4;
 		AllocResponse* response = server_handle_alloc(request);
 
 		sprintf(
@@ -191,10 +189,10 @@ void server_attend(int cx) {
 	if (strcmp(action, PAGE) == 0) {
 		PageRequest* request = (PageRequest*) malloc(sizeof(PageRequest));
 		request->nodeId = param1;
-		request->pageNumber = param4;
-		request->ownershipOnly = param2;
-		request->readOnlyMode = param3;
-		PageResponse* response = server_handle_page_request(cx, request);
+    request->pageNumber = param4;
+    request->ownershipOnly = param2;
+    request->readOnlyMode = param3;
+		PageResponse* response = server_handle_page_request(request);
 
 		sprintf(
 			message,
@@ -217,7 +215,7 @@ void server_attend(int cx) {
 	if (strcmp(action, INVA) == 0) {
 		InvalidationRequest* request = (InvalidationRequest*) malloc(sizeof(InvalidationRequest));
 		request->nodeId = param1;
-		request->pageNumber = param4;
+    request->pageNumber = param4;
 		InvalidationResponse* response = server_handle_invalidation(request);
 
 		sprintf(
@@ -238,7 +236,7 @@ void server_attend(int cx) {
 	if (strcmp(action, BARR) == 0) {
 		BarrierRequest* request = (BarrierRequest*) malloc(sizeof(BarrierRequest));
 		request->nodeId = param1;
-		request->barrierId = param2;
+    	request->barrierId = param2;
 		server_handle_barrier(request);
 		
 		free(request);

@@ -167,7 +167,7 @@ void invalidate_page_wrapper(gpointer data, gpointer user_data) {
     }
 }
 
-PageResponse* server_handle_page_request(int client, PageRequest *request) {
+PageResponse* server_handle_page_request(PageRequest *request) {
     if (request->nodeId < 0 || request->nodeId >= totalNumberOfClients) {
         logger_log_message("Invalid client ID was supplied to server.", ERROR);
         PageResponse* response = (PageResponse*) malloc(sizeof(PageResponse));
@@ -184,7 +184,7 @@ PageResponse* server_handle_page_request(int client, PageRequest *request) {
     ServerPageEntry* pageEntry = pages[request->pageNumber];
     ClientEntry* owner = pageEntry->owner;
 
-    PageResponse* response = server_forward_page_request(client, request, owner);
+    PageResponse* response = server_forward_page_request(request, owner);
     if (response->errorCode != 0) {
         logger_log_message("Page forward request failed.", ERROR);
         return response;
@@ -249,4 +249,3 @@ void server_handle_barrier(BarrierRequest *request) {
         }
     }
 }
-

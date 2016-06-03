@@ -11,7 +11,7 @@
 #include "Server.h"
 #include "Logger.h"
 
-PageResponse* server_forward_page_request(int client, PageRequest *request, ClientEntry* owner) {
+PageResponse* server_forward_page_request(PageRequest *request, ClientEntry* owner) {
     int cx = server_connect(owner->forwardIpAddress, owner->forwardPort);
 
     char logMessage[100];
@@ -53,10 +53,10 @@ PageResponse* server_forward_page_request(int client, PageRequest *request, Clie
     char * contentBeforePage = strchr(message, '&');
     memcpy(response->pageContents, contentBeforePage +1, getpagesize());
 
-    send(client, message, contentBeforePage - message + getpagesize() + 1, 0);
+    send(cx, message, contentBeforePage - message + getpagesize() + 1, 0);
 
     free(message);
-    // shutdown(cx, SHUT_RDWR);
+    shutdown(cx, SHUT_RDWR);
 
     return response;
 }
@@ -94,7 +94,7 @@ InvalidationResponse* server_forward_invalidation(InvalidationRequest *request, 
 
     free(buffer4);
     free(message);
-    // shutdown(cx, SHUT_RDWR);
+    shutdown(cx, SHUT_RDWR);
 
     return response;
 }
