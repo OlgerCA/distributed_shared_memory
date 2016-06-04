@@ -84,10 +84,10 @@ void server_catch(int cx, int numClients) {
 		server_attend(cx_new);
 	}
 	
-	server_multiplex(clients, numClients, cx_max);
+	server_multiplex(cx, clients, numClients, cx_max);
 }
 
-void server_multiplex(int clients[], int numClients, int cx_max) {
+void server_multiplex(int cx, int clients[], int numClients, int cx_max) {
 	fd_set writers;
 	
 	int i;
@@ -108,6 +108,8 @@ void server_multiplex(int clients[], int numClients, int cx_max) {
 			}
 		}
 	} while (completedNodes < numClients);
+
+	shutdown(cx, SHUT_RDWR);
 }
 
 void server_attend(int reqClientSocket) {

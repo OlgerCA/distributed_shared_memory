@@ -59,8 +59,6 @@ PageResponse* server_forward_page_request(int client, PageRequest *request, Clie
         requestSize = strlen(message);
     }
 
-    // shutdown(cx, SHUT_RDWR);
-
     return response;
 }
 
@@ -97,7 +95,6 @@ InvalidationResponse* server_forward_invalidation(InvalidationRequest *request, 
 
     free(buffer4);
     free(message);
-    // shutdown(cx, SHUT_RDWR);
 
     return response;
 }
