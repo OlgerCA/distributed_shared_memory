@@ -35,9 +35,10 @@ int main (int argc, char *argv[])
             numbers[i] = lrand48() % MAX_VALUE;;
             secuentialTotal += isPrime(numbers[i]);
         }
+        printf("The number of prime numbers secuentially found is %d\n", secuentialTotal);
     }
 
-    printf("The number of primer numbers secuentially found is %d\n", secuentialTotal);
+
     DSM_barrier(0);
     int partialResult = 0;
     int assignedElements = ARRAY_SIZE / nodes;
@@ -45,7 +46,7 @@ int main (int argc, char *argv[])
         partialResult += isPrime(numbers[i]);
     }
     partialResults[nid] = partialResult;
-    printf("The number of primer numbers found by: %d is: %d\n", nid, partialResult);
+    printf("The number of prime numbers found by: %d is: %d\n", nid, partialResult);
 
     DSM_barrier(1);
     if (nid == 0)  {
@@ -53,7 +54,7 @@ int main (int argc, char *argv[])
         for (i = 0; i < nodes; i++)
             total += partialResults[i];
 
-        printf("The number of primer numbers found distributively in the array is: %d\n", total);
+        printf("The number of prime numbers found distributively in the array is: %d\n", total);
     }
 
     DSM_barrier(2);

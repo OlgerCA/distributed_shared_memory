@@ -104,9 +104,10 @@ void client_attend(int cx) {
 	if (strcmp(action, PAGE) == 0) {
 		PageRequest* request = (PageRequest*) malloc(sizeof(PageRequest));
 		request->nodeId = param1;
-    request->pageNumber = param4;
-    request->ownershipOnly = param2;
-    request->readOnlyMode = param3;
+		request->pageNumber = param4;
+		request->ownershipOnly = param2;
+		request->readOnlyMode = param3;
+
 		PageResponse* response = client_handle_page_request(request);
 
 		sprintf(
@@ -118,10 +119,18 @@ void client_attend(int cx) {
 			(long) ZERO,
 			"&"
 		);
-		char * contentBeforePage = strchr(message, '&');
-		memcpy(contentBeforePage +1 , response->pageContents, getpagesize());
 
-		send(cx, message, contentBeforePage - message + getpagesize() + 1, 0);
+		size_t requestSize = 0;
+
+		if(!request->ownershipOnly) {
+			char *contentBeforePage = strchr(message, '&');
+			memcpy(contentBeforePage + 1, response->pageContents, getpagesize());
+			requestSize = contentBeforePage - message + getpagesize() + 1;
+		}else{
+			requestSize = strlen(message);
+		}
+
+		send(cx, message, requestSize, 0);
 		
 		free(request);
 		free(response);
@@ -129,7 +138,7 @@ void client_attend(int cx) {
 	if (strcmp(action, INVA) == 0) {
 		InvalidationRequest* request = (InvalidationRequest*) malloc(sizeof(InvalidationRequest));
 		request->nodeId = param1;
-    request->pageNumber = param4;
+    	request->pageNumber = param4;
 		InvalidationResponse* response = client_handle_invalidation(request);
 
 		sprintf(

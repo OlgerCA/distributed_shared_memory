@@ -12,14 +12,14 @@
 #include "Logger.h"
 
 PageResponse* server_forward_page_request(int client, PageRequest *request, ClientEntry* owner) {
-    int cx = server_connect(owner->forwardIpAddress, owner->forwardPort);
+    int clientWithPageSocket = server_connect(owner->forwardIpAddress, owner->forwardPort);
 
     char logMessage[100];
     sprintf(logMessage, "Forwarding request to %s:%d", owner->forwardIpAddress, owner->forwardPort);
 
     logger_log_message(logMessage, INFO);
     
-    char* message = (char*) malloc(MAXDATASIZE);
+    char message[MAXDATASIZE];
     int buffer1 = 0;
     int buffer2 = 0;
     long buffer3 = 0;
@@ -35,8 +35,8 @@ PageResponse* server_forward_page_request(int client, PageRequest *request, Clie
             request->pageNumber
     );
 
-    send(cx, message, strlen(message), 0);
-    recv(cx, message, MAXDATASIZE, 0);
+    send(clientWithPageSocket, message, strlen(message), 0);
+    recv(clientWithPageSocket, message, MAXDATASIZE, 0);
 
     PageResponse* response = (PageResponse*) malloc(sizeof(PageResponse));
 
@@ -50,13 +50,14 @@ PageResponse* server_forward_page_request(int client, PageRequest *request, Clie
             response->pageContents
     );
 
-    char * contentBeforePage = strchr(message, '&');
-    memcpy(response->pageContents, contentBeforePage +1, getpagesize());
-
-    send(client, message, contentBeforePage - message + getpagesize() + 1, 0);
-
-    free(message);
-    // shutdown(cx, SHUT_RDWR);
+    size_t requestSize = 0;
+    if (!request->ownershipOnly) {
+        char *contentBeforePage = strchr(message, '&');
+        memcpy(response->pageContents, contentBeforePage + 1, getpagesize());
+        requestSize = contentBeforePage - message + getpagesize() + 1;
+    }else{
+        requestSize = strlen(message);
+    }
 
     return response;
 }
@@ -94,7 +95,6 @@ InvalidationResponse* server_forward_invalidation(InvalidationRequest *request, 
 
     free(buffer4);
     free(message);
-    // shutdown(cx, SHUT_RDWR);
 
     return response;
 }

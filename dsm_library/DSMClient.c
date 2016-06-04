@@ -67,6 +67,7 @@ static void handle_page_fault(int sig, siginfo_t *si, void *unused)
                 return;
             }else{ // if I am not the owner, the fault was caused by a write operation on a page which is not mine
                 pageRequest.ownershipOnly = 1; // in such case, I will be the new owner
+                pageRequest.readOnlyMode = 0; // and I will have it with write access
             }
         }else{ // if page not present it must be requested
             pageRequest.ownershipOnly = 0;
