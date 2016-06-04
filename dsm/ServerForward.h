@@ -6,7 +6,7 @@
 #include <Requests.h>
 #include "ClientEntry.h"
 
-PageResponse* server_forward_page_request(PageRequest *request, ClientEntry* owner);
+PageResponse* server_forward_page_request(int client,PageRequest *request, ClientEntry* owner);
 InvalidationResponse* server_forward_invalidation(InvalidationRequest* request, ClientEntry* client);
 
 #endif
