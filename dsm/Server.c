@@ -110,9 +110,9 @@ void server_multiplex(int clients[], int numClients, int cx_max) {
 	} while (completedNodes < numClients);
 }
 
-void server_attend(int cx) {
+void server_attend(int reqClientSocket) {
 	char* message = (char*) malloc(MAXDATASIZE);
-	recv(cx, message, MAXDATASIZE, 0);
+	recv(reqClientSocket, message, MAXDATASIZE, 0);
 	
 	char* ipAddress = (char*) malloc(sizeof(char) * 20);
 	char* action = (char*) malloc(sizeof(char)*4);
@@ -130,7 +130,7 @@ void server_attend(int cx) {
 		NodeInitRequest* request = (NodeInitRequest*) malloc(sizeof(NodeInitRequest));
 		strcpy(request->forwardAddress, ipAddress);
 		request->forwardPort = param1;
-		NodeInitResponse* response = server_handle_node_init(request, cx);
+		NodeInitResponse* response = server_handle_node_init(request, reqClientSocket);
 
 		sprintf(
 			message,
@@ -142,7 +142,7 @@ void server_attend(int cx) {
 			VOID
 		);
 		
-		send(cx, message, strlen(message), 0);
+		send(reqClientSocket, message, strlen(message), 0);
 		
 		free(request);
 	}
@@ -161,7 +161,7 @@ void server_attend(int cx) {
 			VOID
 		);
 		
-		send(cx, message, strlen(message), 0);
+		send(reqClientSocket, message, strlen(message), 0);
 		
 		free(request);
 		free(response);
@@ -183,7 +183,7 @@ void server_attend(int cx) {
 			VOID
 		);
 		
-		send(cx, message, strlen(message), 0);
+		send(reqClientSocket, message, strlen(message), 0);
 		
 		free(request);
 		free(response);
@@ -194,7 +194,7 @@ void server_attend(int cx) {
 		request->pageNumber = param4;
 		request->ownershipOnly = param2;
 		request->readOnlyMode = param3;
-		PageResponse* response = server_handle_page_request(cx, request);
+		PageResponse* response = server_handle_page_request(reqClientSocket, request);
 
 		sprintf(
 			message,
@@ -211,9 +211,11 @@ void server_attend(int cx) {
 			char *contentBeforePage = strchr(message, '&');
 			memcpy(contentBeforePage + 1, response->pageContents, getpagesize());
 			requestSize = contentBeforePage - message + getpagesize() + 1;
+		}else{
+			requestSize = strlen(message);
 		}
 
-		send(cx, message, requestSize, 0);
+		send(reqClientSocket, message, requestSize, 0);
 		
 		free(request);
 		free(response);
@@ -234,7 +236,7 @@ void server_attend(int cx) {
 			VOID
 		);
 		
-		send(cx, message, strlen(message), 0);
+		send(reqClientSocket, message, strlen(message), 0);
 		
 		free(request);
 		free(response);

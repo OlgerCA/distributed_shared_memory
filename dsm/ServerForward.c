@@ -12,7 +12,7 @@
 #include "Logger.h"
 
 PageResponse* server_forward_page_request(int client, PageRequest *request, ClientEntry* owner) {
-    int cx = server_connect(owner->forwardIpAddress, owner->forwardPort);
+    int clientWithPageSocket = server_connect(owner->forwardIpAddress, owner->forwardPort);
 
     char logMessage[100];
     sprintf(logMessage, "Forwarding request to %s", owner->forwardIpAddress);
@@ -35,8 +35,8 @@ PageResponse* server_forward_page_request(int client, PageRequest *request, Clie
             request->pageNumber
     );
 
-    send(cx, message, strlen(message), 0);
-    recv(cx, message, MAXDATASIZE, 0);
+    send(clientWithPageSocket, message, strlen(message), 0);
+    recv(clientWithPageSocket, message, MAXDATASIZE, 0);
 
     PageResponse* response = (PageResponse*) malloc(sizeof(PageResponse));
 
@@ -55,9 +55,9 @@ PageResponse* server_forward_page_request(int client, PageRequest *request, Clie
         char *contentBeforePage = strchr(message, '&');
         memcpy(response->pageContents, contentBeforePage + 1, getpagesize());
         requestSize = contentBeforePage - message + getpagesize() + 1;
+    }else{
+        requestSize = strlen(message);
     }
-
-    send(client, message, requestSize , 0);
 
     // shutdown(cx, SHUT_RDWR);
 
