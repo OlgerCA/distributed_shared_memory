@@ -45,8 +45,7 @@ char* getLocalIpAddress(){
     if(ipAddress) {
         return ipAddress;
     } else {
-        perror("Failed to get local ip address");
-        exit(EXIT_FAILURE);
+        return "127.0.0.1";
     }
 }
 
