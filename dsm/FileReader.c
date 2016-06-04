@@ -12,6 +12,7 @@ ClientList* readFile(char* fileName) {
     file = fopen(fileName, "r");
 
     if (file == NULL) {
+        logger_log_message("Error reading file", ERROR);
         printf("Error reading file");
         exit(1);
     }

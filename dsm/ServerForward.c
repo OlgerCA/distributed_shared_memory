@@ -15,7 +15,7 @@ PageResponse* server_forward_page_request(int client, PageRequest *request, Clie
     int cx = server_connect(owner->forwardIpAddress, owner->forwardPort);
 
     char logMessage[100];
-    sprintf(logMessage, "Forwarding request to %s", owner->forwardIpAddress);
+    sprintf(logMessage, "Forwarding request to %s:%d", owner->forwardIpAddress, owner->forwardPort);
 
     logger_log_message(logMessage, INFO);
     
@@ -65,7 +65,7 @@ InvalidationResponse* server_forward_invalidation(InvalidationRequest *request, 
     int cx = server_connect(client->forwardIpAddress, client->forwardPort);
 
     char logMessage[100];
-    sprintf(logMessage, "Invalidating page to %d", client->clientId);
+    sprintf(logMessage, "Invalidating page to %s:%d", client->forwardIpAddress, client->forwardPort);
 
     logger_log_message(logMessage, INFO);
     

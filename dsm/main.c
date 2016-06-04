@@ -22,6 +22,7 @@ int main (int argc, char *argv[])
 #include "Server.h"
 #include "ServerHandle.h"
 #include "Logger.h"
+#include "NetworkUtils.h"
 
 #define NUMBER_OF_PAGES 4096
 
@@ -103,39 +104,45 @@ int main(int argc, char *argv[])
     //read the host file
     ClientList* clients = readFile(hostFile);
 
-    server_startup(NUMBER_OF_PAGES, processCopies);
-    int cx = server_open(PORT, processCopies);
-    if (cx == -1) {
-        handle_error("socket");
-    }
+//    server_startup(NUMBER_OF_PAGES, processCopies);
+//    int cx = server_open(PORT, processCopies);
+//    if (cx == -1) {
+//        logger_log_message("Error creating socket", ERROR);
+//        handle_error("socket");
+//    }
 
     int i = 0;
+    char *localIpAddress = getLocalIpAddress();
     for(; i < processCopies; i++){
         char command[1024];
         int correctIndex = i % clients->size;
         if(otherArguments){
-            sprintf(command, "ssh %s@%s '%s %s %s %ld' &",
+            sprintf(command, "ssh %s@%s '%s %s %s %d %s %ld' &",
                     clients->clients[correctIndex]->clientUsername,
                     clients->clients[correctIndex]->clientIP,
                     processName,
+                    localIpAddress,
                     otherArguments,
-                    clients->clients[correctIndex]->clientIP, //Esto no deberia de ser el IP del server?
-                    clients->clients[correctIndex]->clientPort); //Esto no deberia de ser el port del server?
+                    PORT,
+                    clients->clients[correctIndex]->clientIP,
+                    clients->clients[correctIndex]->clientPort);
         } else {
-            sprintf(command, "ssh %s@%s '%s %s %ld' &",
+            sprintf(command, "ssh %s@%s '%s %s %d %s %ld' &",
                     clients->clients[correctIndex]->clientUsername,
                     clients->clients[correctIndex]->clientIP,
                     processName,
-                    clients->clients[correctIndex]->clientIP, //Esto no deberia de ser el IP del server?
-                    clients->clients[correctIndex]->clientPort); //Esto no deberia de ser el port del server?
+                    localIpAddress,
+                    PORT,
+                    clients->clients[correctIndex]->clientIP,
+                    clients->clients[correctIndex]->clientPort);
         }
         logger_log_message(command, INFO);
         clients->clients[correctIndex]->clientPort++;
         // system(command);
     }
 
-    server_catch(cx, processCopies);
-    server_teardown();
+//    server_catch(cx, processCopies);
+//    server_teardown();
 
     exit(EXIT_SUCCESS);
 }

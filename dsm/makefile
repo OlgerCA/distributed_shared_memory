@@ -6,5 +6,5 @@ CHECK=-Wall -Wextra
 
 all: dsm
 
-dsm: ClientEntry.c FileReader.c Logger.c main.c Server.c ServerForward.c ServerHandle.c ServerPageEntry.c
+dsm: ClientEntry.c FileReader.c Logger.c main.c Server.c ServerForward.c ServerHandle.c ServerPageEntry.c NetworkUtils.c
 	$(CC) $(CFLAGS) -o dsm ClientEntry.c FileReader.c Logger.c main.c Server.c ServerForward.c ServerHandle.c ServerPageEntry.c $(COMMON) $(LIBS)
