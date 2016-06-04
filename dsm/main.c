@@ -104,12 +104,12 @@ int main(int argc, char *argv[])
     //read the host file
     ClientList* clients = readFile(hostFile);
 
-//    server_startup(NUMBER_OF_PAGES, processCopies);
-//    int cx = server_open(PORT, processCopies);
-//    if (cx == -1) {
-//        logger_log_message("Error creating socket", ERROR);
-//        handle_error("socket");
-//    }
+    server_startup(NUMBER_OF_PAGES, processCopies);
+    int cx = server_open(PORT, processCopies);
+    if (cx == -1) {
+        logger_log_message("Error creating socket", ERROR);
+        handle_error("socket");
+    }
 
     int i = 0;
     char *localIpAddress = getLocalIpAddress();
@@ -141,8 +141,8 @@ int main(int argc, char *argv[])
         //system(command);
     }
 
-//    server_catch(cx, processCopies);
-//    server_teardown();
+    server_catch(cx, processCopies);
+    server_teardown();
 
     exit(EXIT_SUCCESS);
 }
