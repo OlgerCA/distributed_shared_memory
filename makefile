@@ -4,9 +4,9 @@ COMMON = -Icommon
 LIBS = -pthread -lm
 CHECK=-Wall -Wextra
 
-all: dsm dsm_lib app1 app2 app3
+all: dsm_server dsm_lib app1 app2 app3
 
-dsm:
+dsm_server:
 	(cd dsm; make)
 
 dsm_lib:
@@ -20,3 +20,6 @@ app2:
 
 app3:
 	(cd application_3; make)
+
+clean:
+	rm ./dsm/dsm ./dsm_library/dsm_lib.so ./application_1/app1 ./application_2/app2 ./application_3/app3

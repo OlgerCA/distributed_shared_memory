@@ -138,7 +138,7 @@ int main(int argc, char *argv[])
         }
         logger_log_message(command, INFO);
         clients->clients[correctIndex]->clientPort++;
-        //system(command);
+        system(command);
     }
 
     server_catch(cx, processCopies);

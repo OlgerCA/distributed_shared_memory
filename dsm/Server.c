@@ -11,6 +11,7 @@
 #include <zconf.h>
 #include "ServerHandle.h"
 #include "Server.h"
+#include "NetworkUtils.h"
 
 int completedNodes;
 
@@ -25,7 +26,7 @@ int server_open(int sin_port, int max_conn) {
 	
 	addr_server.sin_family = AF_INET;
 	// addr_server.sin_addr.s_addr = INADDR_ANY;
-	addr_server.sin_addr.s_addr = inet_addr("127.0.0.1");
+	addr_server.sin_addr.s_addr = inet_addr(getLocalIpAddress());
 	addr_server.sin_port = htons(sin_port);
 
 	int addr_server_size = sizeof(struct sockaddr_in);
