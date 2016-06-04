@@ -206,10 +206,14 @@ void server_attend(int cx) {
 			"&"
 		);
 
-		char * contentBeforePage = strchr(message, '&');
-		memcpy(contentBeforePage +1 , response->pageContents, getpagesize());
+		size_t requestSize = 0;
+		if(!request->ownershipOnly) {
+			char *contentBeforePage = strchr(message, '&');
+			memcpy(contentBeforePage + 1, response->pageContents, getpagesize());
+			requestSize = contentBeforePage - message + getpagesize() + 1;
+		}
 
-		send(cx, message, contentBeforePage - message + getpagesize() + 1, 0);
+		send(cx, message, requestSize, 0);
 		
 		free(request);
 		free(response);

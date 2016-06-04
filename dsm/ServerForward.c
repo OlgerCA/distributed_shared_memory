@@ -19,7 +19,7 @@ PageResponse* server_forward_page_request(int client, PageRequest *request, Clie
 
     logger_log_message(logMessage, INFO);
     
-    char* message = (char*) malloc(MAXDATASIZE);
+    char message[MAXDATASIZE];
     int buffer1 = 0;
     int buffer2 = 0;
     long buffer3 = 0;
@@ -50,12 +50,15 @@ PageResponse* server_forward_page_request(int client, PageRequest *request, Clie
             response->pageContents
     );
 
-    char * contentBeforePage = strchr(message, '&');
-    memcpy(response->pageContents, contentBeforePage +1, getpagesize());
+    size_t requestSize = 0;
+    if (!request->ownershipOnly) {
+        char *contentBeforePage = strchr(message, '&');
+        memcpy(response->pageContents, contentBeforePage + 1, getpagesize());
+        requestSize = contentBeforePage - message + getpagesize() + 1;
+    }
 
-    send(client, message, contentBeforePage - message + getpagesize() + 1, 0);
+    send(client, message, requestSize , 0);
 
-    free(message);
     // shutdown(cx, SHUT_RDWR);
 
     return response;

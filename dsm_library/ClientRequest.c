@@ -135,10 +135,10 @@ PageResponse client_request_page(PageRequest* request) {
 		response.pageContents
 	);
 
-	char * contentBeforePage = strchr(message, '&');
-	memcpy(response.pageContents, contentBeforePage +1, getpagesize());
-
-	//free(message);
+	if(!request->ownershipOnly) {
+		char *contentBeforePage = strchr(message, '&');
+		memcpy(response.pageContents, contentBeforePage + 1, getpagesize());
+	}
 
 	return response;
 }
