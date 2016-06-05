@@ -58,8 +58,11 @@ void server_teardown() {
     for (i = 0; i < currentPage; i++)
         server_page_entry_free(pages[i]);
     free(pages);
-    for (i = 0; i < currentClient; i++)
+    for (i = 0; i < totalNumberOfClients; i++) {
+        shutdown(clients[i]->clientSocketId, SHUT_RDWR);
+        close(clients[i]->clientSocketId);
         client_entry_free(clients[i]);
+    }
     free(clients);
     free(mallocsPerClient);
     free(mallocAddresses);
