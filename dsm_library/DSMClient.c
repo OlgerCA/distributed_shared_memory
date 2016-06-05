@@ -15,6 +15,7 @@
 #include "DSMClient.h"
 #include "ClientRequest.h"
 #include "ClientPageEntry.h"
+#include "Client.h"
 
 // This file should contain all memory protection and mapping logic.
 // This is the only API used by client applications.
@@ -30,6 +31,25 @@ size_t addressSpaceLength;
 
 int DSM_node_copy_page_contents(int faultingPage, int pageSize, PageResponse response);
 PageResponse response;
+
+sigset_t orig_mask;
+
+void blockSignals() {
+    sigset_t mask;
+    sigemptyset (&mask);
+    sigaddset (&mask, SIGIO);
+    if (sigprocmask(SIG_BLOCK, &mask, &orig_mask) < 0) {
+        perror ("sigprocmask");
+        return;
+    }
+}
+
+void unblockSignals() {
+    if (sigprocmask(SIG_SETMASK, &orig_mask, NULL) < 0) {
+        perror ("sigprocmask");
+        return;
+    }
+}
 
 static void handle_page_fault(int sig, siginfo_t *si, void *unused)
 {
@@ -75,8 +95,12 @@ static void handle_page_fault(int sig, siginfo_t *si, void *unused)
             // if it should have been with write privileges then another fault will happen that will update the access
         }
 
+
         response =  client_request_page(&pageRequest);
+        blockSignals();
+        page->present = 1;
         if (response.errorCode != 0) {
+            unblockSignals();
             return;
         }
 
@@ -88,12 +112,15 @@ static void handle_page_fault(int sig, siginfo_t *si, void *unused)
             } else {
                 page->isReadOnly = 0;
                 page->ownership = 1;
+                page->present = 1;
             }
+            unblockSignals();
             return;
         }
 
         // the page was requested, so its contents must be copied locally
         if(!DSM_node_copy_page_contents(faultingPage, pageSize, response)){
+            unblockSignals();
             return;
         }
 
@@ -102,6 +129,7 @@ static void handle_page_fault(int sig, siginfo_t *si, void *unused)
             if (mprotect(addressSpace + faultingPage * pageSize, (size_t) pageSize, PROT_READ) == -1) {
                 //free(response);
                 fprintf(stderr, "%s\n", strerror(errno));
+                unblockSignals();
                 return;
             }
             page->isReadOnly = 1;
@@ -110,12 +138,14 @@ static void handle_page_fault(int sig, siginfo_t *si, void *unused)
             if (mprotect(addressSpace + faultingPage * pageSize, (size_t) pageSize, PROT_WRITE | PROT_READ) == -1) {
                 //free(response);
                 fprintf(stderr, "%s\n", strerror(errno));
+                unblockSignals();
                 return;
             }
             page->isReadOnly = 0;
             page->ownership = 1;
         }
         page->present = 1;
+        unblockSignals();
     }
 /*
     long faultAddress = (long) si->si_addr;
@@ -225,6 +255,7 @@ int DSM_node_exit(void) {
 
     if (errorCode == 0) {
         // TODO Free Page table and everything else
+        client_closeSockets();
         nodeId = 0;
         free(pages);
         munmap(addressSpace, addressSpaceLength);

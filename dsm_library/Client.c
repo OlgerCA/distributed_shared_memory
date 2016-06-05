@@ -14,8 +14,8 @@
 #include "ClientHandle.h"
 #include "ClientRequest.h"
 
-int server = -1;
-int client = -1;
+int socketToServer = -1;
+int clientSocket = -1;
 
 int client_connect(char* s_addr, int sin_port) {
 	struct sockaddr_in addr_server;
@@ -77,7 +77,7 @@ void client_listener(int e) {
 	struct sockaddr addr_client;
 
 	unsigned int addr_client_size = sizeof(struct sockaddr);
-	int cx = accept(client, &addr_client, &addr_client_size);
+	int cx = accept(clientSocket, &addr_client, &addr_client_size);
 	if (cx == -1) {
 		return;
 	}
@@ -159,4 +159,26 @@ void client_attend(int cx) {
 	}
 
 	shutdown(cx, SHUT_RDWR);
+	close(cx);
+}
+
+void client_closeSockets(){
+	int returnValue = shutdown(socketToServer, SHUT_RDWR);
+	if(returnValue != 0){
+		fprintf(stderr, "Error shutting down client port,  %s\n", strerror(errno));
+	}
+	returnValue = close(socketToServer);
+	if(returnValue != 0){
+		fprintf(stderr, "Error closing client port,  %s\n", strerror(errno));
+	}
+
+	returnValue = shutdown(clientSocket, SHUT_RDWR);
+	if(returnValue != 0){
+		fprintf(stderr, "Error shutting down server port,  %s\n", strerror(errno));
+	}
+
+	returnValue = 	close(clientSocket);
+	if(returnValue != 0){
+		fprintf(stderr, "Error closing server port,  %s\n", strerror(errno));
+	}
 }

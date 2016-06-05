@@ -37,8 +37,8 @@ PageResponse* server_forward_page_request(int client, PageRequest *request, Clie
 
     printf("dperez, message sent: %s \n", message);
 
-    int valueSend = send(clientWithPageSocket, message, strlen(message), 0);
-    int valueRecv = recv(clientWithPageSocket, message, MAXDATASIZE, 0);
+    send(clientWithPageSocket, message, strlen(message), 0);
+    recv(clientWithPageSocket, message, MAXDATASIZE, 0);
 
     printf("dperez, message recv: %s \n", message);
     PageResponse* response = (PageResponse*) malloc(sizeof(PageResponse));
@@ -59,11 +59,16 @@ PageResponse* server_forward_page_request(int client, PageRequest *request, Clie
         memcpy(response->pageContents, contentBeforePage + 1, getpagesize());
     }
 
+    shutdown(clientWithPageSocket, SHUT_RDWR);
+    close(clientWithPageSocket);
     return response;
 }
 
 InvalidationResponse* server_forward_invalidation(InvalidationRequest *request, ClientEntry* client) {
     int cx = server_connect(client->forwardIpAddress, client->forwardPort);
+    if(cx == -1){
+        printf("dperez, Retorna -1\n");
+    }
 
     char logMessage[100];
     sprintf(logMessage, "Invalidating page to %s:%d", client->forwardIpAddress, client->forwardPort);
@@ -93,5 +98,7 @@ InvalidationResponse* server_forward_invalidation(InvalidationRequest *request, 
             buffer4
     );
 
+    shutdown(cx, SHUT_RDWR);
+    close(cx);
     return response;
 }

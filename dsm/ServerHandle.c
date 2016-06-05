@@ -190,15 +190,6 @@ PageResponse* server_handle_page_request(int client, PageRequest *request) {
         return response;
     }
 
-    if (request->readOnlyMode == false) {
-        pageEntry->owner = clients[request->nodeId];
-        g_slist_foreach(pageEntry->clientsWithCopies, invalidate_page_wrapper, request);
-        g_slist_free(pageEntry->clientsWithCopies);
-        pageEntry->clientsWithCopies = NULL;
-    } else {
-        pageEntry->clientsWithCopies = g_slist_prepend(pageEntry->clientsWithCopies, clients[request->nodeId]);
-    }
-
     return response;
 }
 
@@ -249,3 +240,16 @@ void server_handle_barrier(BarrierRequest *request) {
     }
 }
 
+void server_handler_updateOwnerInfo(PageRequest *request){
+    ServerPageEntry* pageEntry = pages[request->pageNumber];
+
+    if (request->readOnlyMode == false) {
+        pageEntry->owner = clients[request->nodeId];
+        printf("The new owner of page %ld is %d\n",pageEntry->pageNumber, pageEntry->owner->clientId);
+        g_slist_foreach(pageEntry->clientsWithCopies, invalidate_page_wrapper, request);
+        g_slist_free(pageEntry->clientsWithCopies);
+        pageEntry->clientsWithCopies = NULL;
+    } else {
+        pageEntry->clientsWithCopies = g_slist_prepend(pageEntry->clientsWithCopies, clients[request->nodeId]);
+    }
+}

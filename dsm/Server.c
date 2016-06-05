@@ -48,6 +48,7 @@ int server_connect(char* s_addr, int sin_port) {
 
 	int cx = socket(AF_INET, SOCK_STREAM, 0);
 	if (cx == -1) {
+		fprintf(stderr, "%s\n", strerror(errno));
 		return cx;
 	}
 	
@@ -56,10 +57,8 @@ int server_connect(char* s_addr, int sin_port) {
 	addr_server.sin_port = htons(sin_port);
 
 	int addr_server_size = sizeof(struct sockaddr);
-	if (
-		connect(cx, (struct sockaddr*) &addr_server, addr_server_size) == -1
-	) {
-		fprintf(stderr, "%s\n", strerror(errno));
+	if (connect(cx, (struct sockaddr*) &addr_server, addr_server_size) == -1) {
+		fprintf(stderr, "ERROR CONECTING TO PORT %d: %s\n", sin_port,  strerror(errno));
 		return -1;
 	}
 	
@@ -111,6 +110,7 @@ void server_multiplex(int cx, int clients[], int numClients, int cx_max) {
 	} while (completedNodes < numClients);
 
 	shutdown(cx, SHUT_RDWR);
+	close(cx);
 }
 
 void server_attend(int reqClientSocket) {
@@ -221,10 +221,12 @@ void server_attend(int reqClientSocket) {
 			}
 
 			send(reqClientSocket, message, requestSize, 0);
+			server_handler_updateOwnerInfo(request);
+
 		}else{
 			goto pageRequest;
 		}
-		
+
 		free(request);
 		free(response);
 	}
