@@ -76,9 +76,9 @@ NodeExitResponse* client_request_node_exit(NodeExitRequest* request) {
 }
 
 AllocResponse* client_request_alloc(AllocRequest* request) {
-	char* message = (char*) malloc(MAXDATASIZE);
+	char message[MAXDATASIZE];
 	int buffer1 = 0;
-	char* buffer2 = (char*) malloc(2);
+	char buffer2[2];
 	
 	sprintf(message, REQ_FORMAT, GET, ALLO, request->nodeId, ZERO, ZERO, request->size);
 	
@@ -96,9 +96,6 @@ AllocResponse* client_request_alloc(AllocRequest* request) {
 		&response->address,
 		buffer2
 	);
-	
-	free(buffer2);
-	free(message);
 
 	return response;
 }

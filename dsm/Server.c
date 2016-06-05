@@ -114,11 +114,11 @@ void server_multiplex(int cx, int clients[], int numClients, int cx_max) {
 }
 
 void server_attend(int reqClientSocket) {
-	char* message = (char*) malloc(MAXDATASIZE);
+	char message[MAXDATASIZE];
 	recv(reqClientSocket, message, MAXDATASIZE, 0);
 	
-	char* ipAddress = (char*) malloc(sizeof(char) * 20);
-	char* action = (char*) malloc(sizeof(char)*4);
+	char ipAddress[20];
+	char action[4];
 	int param1 = 0;
 	int param2 = 0;
 	int param3 = 0;
@@ -194,10 +194,13 @@ void server_attend(int reqClientSocket) {
 	if (strcmp(action, PAGE) == 0) {
 		PageRequest* request = (PageRequest*) malloc(sizeof(PageRequest));
 		request->nodeId = param1;
-		request->pageNumber = param4;
 		request->ownershipOnly = param2;
 		request->readOnlyMode = param3;
-		PageResponse* response = server_handle_page_request(reqClientSocket, request);
+		request->pageNumber = param4;
+		PageResponse* response = NULL;
+
+		pageRequest:
+		response = server_handle_page_request(reqClientSocket, request);
 
 		sprintf(
 			message,
@@ -209,16 +212,18 @@ void server_attend(int reqClientSocket) {
 			"&"
 		);
 
-		size_t requestSize = 0;
-		if(!request->ownershipOnly) {
-			char *contentBeforePage = strchr(message, '&');
-			memcpy(contentBeforePage + 1, response->pageContents, getpagesize());
-			requestSize = contentBeforePage - message + getpagesize() + 1;
-		}else{
-			requestSize = strlen(message);
-		}
+		if(response->errorCode == 0) {
+			size_t requestSize = strlen(message);
+			if (!request->ownershipOnly) {
+				char *contentBeforePage = strchr(message, '&');
+				memcpy(contentBeforePage + 1, response->pageContents, getpagesize());
+				requestSize = contentBeforePage - message + getpagesize() + 1;
+			}
 
-		send(reqClientSocket, message, requestSize, 0);
+			send(reqClientSocket, message, requestSize, 0);
+		}else{
+			goto pageRequest;
+		}
 		
 		free(request);
 		free(response);
@@ -252,8 +257,4 @@ void server_attend(int reqClientSocket) {
 		
 		free(request);
 	}
-
-	free(message);
-	free(ipAddress);
-	free(action);
 }

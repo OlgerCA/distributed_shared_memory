@@ -15,7 +15,7 @@
 #define REQ_FORMAT "%s %s %d %d %d %ld"
 #define RES_FORMAT "%d %d %d %ld %s"
 
-#define MAXCONN 4
+#define MAXCONN 8
 #define MAXDATASIZE 32668
 
 typedef struct {

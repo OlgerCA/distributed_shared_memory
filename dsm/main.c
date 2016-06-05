@@ -117,7 +117,7 @@ int main(int argc, char *argv[])
         char command[1024];
         int correctIndex = i % clients->size;
         if(otherArguments){
-            sprintf(command, "ssh %s@%s '%s %s %s %d %s %ld' &",
+            sprintf(command, "ssh %s@%s '%s %s %s %d %s %ld > salida%d.out' &",
                     clients->clients[correctIndex]->clientUsername,
                     clients->clients[correctIndex]->clientIP,
                     processName,
@@ -125,16 +125,18 @@ int main(int argc, char *argv[])
                     otherArguments,
                     PORT,
                     clients->clients[correctIndex]->clientIP,
-                    clients->clients[correctIndex]->clientPort);
+                    clients->clients[correctIndex]->clientPort,
+                    i);
         } else {
-            sprintf(command, "ssh %s@%s '%s %s %d %s %ld' &",
+            sprintf(command, "ssh %s@%s '%s %s %d %s %ld > salida%d.out' &",
                     clients->clients[correctIndex]->clientUsername,
                     clients->clients[correctIndex]->clientIP,
                     processName,
                     localIpAddress,
                     PORT,
                     clients->clients[correctIndex]->clientIP,
-                    clients->clients[correctIndex]->clientPort);
+                    clients->clients[correctIndex]->clientPort,
+                    i);
         }
         logger_log_message(command, INFO);
         clients->clients[correctIndex]->clientPort++;

@@ -234,7 +234,7 @@ void server_handle_barrier(BarrierRequest *request) {
         int nodeIndex = 0;
         logger_log_message("Barrier was completed, answering to nodes", INFO);
         for(; nodeIndex < totalNumberOfClients; nodeIndex++){
-            char* message = (char*) malloc(MAXDATASIZE);
+            char message [MAXDATASIZE];
             sprintf(
                     message,
                     RES_FORMAT,
@@ -245,7 +245,6 @@ void server_handle_barrier(BarrierRequest *request) {
                     VOID
             );
             send(clients[nodeIndex]->clientSocketId, message, strlen(message), 0);
-            free(message);
         }
     }
 }

@@ -46,13 +46,16 @@ int main (int argc, char *argv[])
         partialResult += isPrime(numbers[i]);
     }
     partialResults[nid] = partialResult;
+
     printf("The number of prime numbers found by: %d is: %d\n", nid, partialResult);
 
     DSM_barrier(1);
     if (nid == 0)  {
         int total = 0;
-        for (i = 0; i < nodes; i++)
+        for (i = 0; i < nodes; i++) {
             total += partialResults[i];
+            printf("Value reported by %d is %d\n", i, partialResults[i]);
+        }
 
         printf("The number of prime numbers found distributively in the array is: %d\n", total);
     }

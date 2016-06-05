@@ -86,11 +86,11 @@ void client_listener(int e) {
 }
 
 void client_attend(int cx) {
-	char* message = (char*) malloc(MAXDATASIZE);
+	char message [MAXDATASIZE];
 	recv(cx, message, MAXDATASIZE, 0);
 	
-	char* method = (char*) malloc(sizeof(char)*4);
-	char* action = (char*) malloc(sizeof(char)*4);
+	char method[4];
+	char action[4];
 	int param1 = 0;
 	int param2 = 0;
 	int param3 = 0;
@@ -104,10 +104,11 @@ void client_attend(int cx) {
 	if (strcmp(action, PAGE) == 0) {
 		PageRequest* request = (PageRequest*) malloc(sizeof(PageRequest));
 		request->nodeId = param1;
-		request->pageNumber = param4;
 		request->ownershipOnly = param2;
 		request->readOnlyMode = param3;
+		request->pageNumber = param4;
 
+		printf("dperez, Received: %s\n", message);
 		PageResponse* response = client_handle_page_request(request);
 
 		sprintf(
@@ -157,8 +158,5 @@ void client_attend(int cx) {
 		free(response);
 	}
 
-	free(message);
-	free(method);
-	free(action);
 	shutdown(cx, SHUT_RDWR);
 }

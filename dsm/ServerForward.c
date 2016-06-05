@@ -35,9 +35,12 @@ PageResponse* server_forward_page_request(int client, PageRequest *request, Clie
             request->pageNumber
     );
 
-    send(clientWithPageSocket, message, strlen(message), 0);
-    recv(clientWithPageSocket, message, MAXDATASIZE, 0);
+    printf("dperez, message sent: %s \n", message);
 
+    int valueSend = send(clientWithPageSocket, message, strlen(message), 0);
+    int valueRecv = recv(clientWithPageSocket, message, MAXDATASIZE, 0);
+
+    printf("dperez, message recv: %s \n", message);
     PageResponse* response = (PageResponse*) malloc(sizeof(PageResponse));
 
     sscanf(
@@ -50,13 +53,10 @@ PageResponse* server_forward_page_request(int client, PageRequest *request, Clie
             response->pageContents
     );
 
-    size_t requestSize = 0;
-    if (!request->ownershipOnly) {
+    // requesting not only ownership and no error
+    if (!request->ownershipOnly && response->errorCode == 0) {
         char *contentBeforePage = strchr(message, '&');
         memcpy(response->pageContents, contentBeforePage + 1, getpagesize());
-        requestSize = contentBeforePage - message + getpagesize() + 1;
-    }else{
-        requestSize = strlen(message);
     }
 
     return response;
@@ -70,11 +70,11 @@ InvalidationResponse* server_forward_invalidation(InvalidationRequest *request, 
 
     logger_log_message(logMessage, INFO);
     
-    char* message = (char*) malloc(MAXDATASIZE);
+    char message[MAXDATASIZE];
     int buffer1 = 0;
     int buffer2 = 0;
     long buffer3 = 0;
-    char* buffer4 = (char*) malloc(2);
+    char buffer4[2];
 
     sprintf(message, REQ_FORMAT, GET, INVA, request->nodeId, ZERO, ZERO, request->pageNumber);
 
@@ -92,9 +92,6 @@ InvalidationResponse* server_forward_invalidation(InvalidationRequest *request, 
             &buffer3,
             buffer4
     );
-
-    free(buffer4);
-    free(message);
 
     return response;
 }
