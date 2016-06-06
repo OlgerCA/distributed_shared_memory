@@ -12,6 +12,7 @@
 #include <Responses.h>
 #include "ClientRequest.h"
 #include "Client.h"
+#include "Globals.h"
 
 // This file should contain all socket related logic to communicate with socketToServer.
 // Not sure if responses should be waited async.
@@ -119,7 +120,8 @@ PageResponse client_request_page(PageRequest* request) {
 
 	send(socketToServer, message, strlen(message) + 1, 0);
 	recv(socketToServer, message, MAXDATASIZE, 0);
-	
+	blockSignals();
+
 	PageResponse response;
 
 	sscanf(

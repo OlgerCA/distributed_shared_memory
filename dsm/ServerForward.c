@@ -66,7 +66,7 @@ InvalidationResponse* server_forward_invalidation(InvalidationRequest *request, 
     int cx = server_connect(client->forwardIpAddress, client->forwardPort);
 
     char logMessage[100];
-    sprintf(logMessage, "Invalidating page to %s:%d", client->forwardIpAddress, client->forwardPort);
+    sprintf(logMessage, "Invalidating page to %s:%d\n", client->forwardIpAddress, client->forwardPort);
 
     logger_log_message(logMessage, INFO);
     

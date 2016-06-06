@@ -32,27 +32,10 @@ size_t addressSpaceLength;
 int DSM_node_copy_page_contents(int faultingPage, int pageSize, PageResponse response);
 PageResponse response;
 
-sigset_t orig_mask;
-
-void blockSignals() {
-    sigset_t mask;
-    sigemptyset (&mask);
-    sigaddset (&mask, SIGIO);
-    if (sigprocmask(SIG_BLOCK, &mask, &orig_mask) < 0) {
-        perror ("sigprocmask");
-        return;
-    }
-}
-
-void unblockSignals() {
-    if (sigprocmask(SIG_SETMASK, &orig_mask, NULL) < 0) {
-        perror ("sigprocmask");
-        return;
-    }
-}
-
 static void handle_page_fault(int sig, siginfo_t *si, void *unused)
 {
+    interrupted = 0;
+
     long faultAddress = (long) si->si_addr;
     int pageSize = getpagesize();
     long faultingPage = (faultAddress - (long) addressSpace) / pageSize; //0-based
@@ -95,9 +78,15 @@ static void handle_page_fault(int sig, siginfo_t *si, void *unused)
             // if it should have been with write privileges then another fault will happen that will update the access
         }
 
+        if(interrupted)
+            return;
 
         response = client_request_page(&pageRequest);
-        blockSignals();
+
+        /*if(interrupted) {
+            unblockSignals();
+            return;
+        }*/
         page->present = 1;
         if (response.errorCode != 0) {
             unblockSignals();
@@ -165,9 +154,12 @@ int DSM_node_copy_page_contents(int faultingPage, int pageSize, PageResponse res
         return 0;
     }
     char* startingPageAddress = addressSpace + faultingPage * pageSize;
-    int i = 0;
+
+    memcpy(startingPageAddress, response.pageContents, pageSize );
+
+    /*int i = 0;
     for (; i < pageSize; i++)
-        startingPageAddress[i] = response.pageContents[i];
+        startingPageAddress[i] = response.pageContents[i];*/
     //probably with a memcopy should work too
 
     return 1;

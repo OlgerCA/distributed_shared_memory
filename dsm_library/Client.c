@@ -17,6 +17,7 @@
 int socketToServer = -1;
 int clientSocket = -1;
 int isNodeRunning = 1;
+int interrupted = 0;
 
 int client_connect(char* s_addr, int sin_port) {
 	struct sockaddr_in addr_server;
@@ -82,6 +83,7 @@ int client_listen(int sin_port, int max_conn) {
 
 void client_listener(int e) {
 	if(isNodeRunning) {
+		interrupted = 1;
 		struct sockaddr addr_client;
 
 		unsigned int addr_client_size = sizeof(struct sockaddr);

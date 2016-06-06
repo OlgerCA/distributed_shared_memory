@@ -4,6 +4,7 @@
 extern int socketToServer;
 extern int clientSocket;
 extern int isNodeRunning;
+extern int interrupted;
 
 int client_connect(char* s_addr, int sin_port);
 int client_listen(int sin_port, int max_conn);
