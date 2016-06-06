@@ -59,6 +59,7 @@ PageResponse* server_forward_page_request(int client, PageRequest *request, Clie
         memcpy(response->pageContents, contentBeforePage + 1, getpagesize());
     }
 
+    printf("dperez, Closing socket: %d\n", clientWithPageSocket);
     shutdown(clientWithPageSocket, SHUT_RDWR);
     close(clientWithPageSocket);
     return response;
@@ -66,9 +67,6 @@ PageResponse* server_forward_page_request(int client, PageRequest *request, Clie
 
 InvalidationResponse* server_forward_invalidation(InvalidationRequest *request, ClientEntry* client) {
     int cx = server_connect(client->forwardIpAddress, client->forwardPort);
-    if(cx == -1){
-        printf("dperez, Retorna -1\n");
-    }
 
     char logMessage[100];
     sprintf(logMessage, "Invalidating page to %s:%d", client->forwardIpAddress, client->forwardPort);
@@ -98,6 +96,7 @@ InvalidationResponse* server_forward_invalidation(InvalidationRequest *request, 
             buffer4
     );
 
+    printf("dperez, Closing socket: %d\n", cx);
     shutdown(cx, SHUT_RDWR);
     close(cx);
     return response;

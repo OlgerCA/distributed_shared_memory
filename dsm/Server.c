@@ -19,11 +19,13 @@ int server_open(int sin_port, int max_conn) {
 	struct sockaddr_in addr_server;
 	completedNodes = 0;
 
+	int option = 1;
 	int cx = socket(AF_INET, SOCK_STREAM, 0);
+	printf("dperez, socket opened in server_open: %d\n", cx);
 	if (cx == -1) {
 		return cx;
 	}
-	
+	setsockopt(cx, SOL_SOCKET,(SO_REUSEPORT | SO_REUSEADDR),(char*)&option,sizeof(option));
 	addr_server.sin_family = AF_INET;
 	// addr_server.sin_addr.s_addr = INADDR_ANY;
 	addr_server.sin_addr.s_addr = inet_addr(getLocalIpAddress());
@@ -31,12 +33,12 @@ int server_open(int sin_port, int max_conn) {
 
 	int addr_server_size = sizeof(struct sockaddr_in);
 	if (bind(cx, (struct sockaddr*) &addr_server, addr_server_size) == -1) {
-		fprintf(stderr, "%s\n", strerror(errno));
+		fprintf(stderr, "dperez, ERROR IN bind: %s\n", strerror(errno));
 		return -1;
 	}
 
 	if (listen(cx, max_conn)) {
-		fprintf(stderr, "%s\n", strerror(errno));
+		fprintf(stderr, "dperez, ERROR IN listen: %s\n", strerror(errno));
 		return -1;
 	}
 
@@ -46,11 +48,14 @@ int server_open(int sin_port, int max_conn) {
 int server_connect(char* s_addr, int sin_port) {
 	struct sockaddr_in addr_server;
 
+	int option = 1;
 	int cx = socket(AF_INET, SOCK_STREAM, 0);
+	printf("dperez, socket opened in server_connect: %d\n", cx);
 	if (cx == -1) {
 		fprintf(stderr, "%s\n", strerror(errno));
 		return cx;
 	}
+	setsockopt(cx, SOL_SOCKET,(SO_REUSEPORT | SO_REUSEADDR),(char*)&option,sizeof(option));
 	
 	addr_server.sin_family = AF_INET;
 	addr_server.sin_addr.s_addr = inet_addr(s_addr);
@@ -58,14 +63,14 @@ int server_connect(char* s_addr, int sin_port) {
 
 	int addr_server_size = sizeof(struct sockaddr);
 	if (connect(cx, (struct sockaddr*) &addr_server, addr_server_size) == -1) {
-		fprintf(stderr, "ERROR CONECTING TO PORT %d: %s\n", sin_port,  strerror(errno));
+		fprintf(stderr, "ERROR CONECTING TO PORT %d: and addresss: %s,  %s\n", sin_port, s_addr, strerror(errno));
 		return -1;
 	}
 	
 	return cx;
 }
 
-void server_catch(int cx, int numClients) {
+void server_catch(int mainServerSocket, int numClients) {
 	int clients[numClients];
 	
 	struct sockaddr addr_client;
@@ -75,7 +80,8 @@ void server_catch(int cx, int numClients) {
 	
 	int i;
 	for (i=0; i<numClients; i++) {
-		cx_new = accept(cx, &addr_client, &addr_client_size);
+		cx_new = accept(mainServerSocket, &addr_client, &addr_client_size);
+		printf("dperez, socket opened in accept de server_catch: %d \n", cx_new);
 		if (cx_new > cx_max) {
 			cx_max = cx_new;
 		}
@@ -84,7 +90,7 @@ void server_catch(int cx, int numClients) {
 		server_attend(cx_new);
 	}
 	
-	server_multiplex(cx, clients, numClients, cx_max);
+	server_multiplex(mainServerSocket, clients, numClients, cx_max);
 }
 
 void server_multiplex(int cx, int clients[], int numClients, int cx_max) {
@@ -109,6 +115,7 @@ void server_multiplex(int cx, int clients[], int numClients, int cx_max) {
 		}
 	} while (completedNodes < numClients);
 
+	printf("dperez, Closing socket: %d \n", cx);
 	shutdown(cx, SHUT_RDWR);
 	close(cx);
 }

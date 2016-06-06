@@ -96,7 +96,7 @@ static void handle_page_fault(int sig, siginfo_t *si, void *unused)
         }
 
 
-        response =  client_request_page(&pageRequest);
+        response = client_request_page(&pageRequest);
         blockSignals();
         page->present = 1;
         if (response.errorCode != 0) {
@@ -255,6 +255,7 @@ int DSM_node_exit(void) {
 
     if (errorCode == 0) {
         // TODO Free Page table and everything else
+        isNodeRunning = 0;
         client_closeSockets();
         nodeId = 0;
         free(pages);
