@@ -35,12 +35,9 @@ PageResponse* server_forward_page_request(int client, PageRequest *request, Clie
             request->pageNumber
     );
 
-    printf("dperez, message sent: %s \n", message);
-
     send(clientWithPageSocket, message, strlen(message), 0);
     recv(clientWithPageSocket, message, MAXDATASIZE, 0);
 
-    printf("dperez, message recv: %s \n", message);
     PageResponse* response = (PageResponse*) malloc(sizeof(PageResponse));
 
     sscanf(
@@ -59,7 +56,7 @@ PageResponse* server_forward_page_request(int client, PageRequest *request, Clie
         memcpy(response->pageContents, contentBeforePage + 1, getpagesize());
     }
 
-    printf("dperez, Closing socket: %d\n", clientWithPageSocket);
+    printf("Closing socket: %d\n", clientWithPageSocket);
     shutdown(clientWithPageSocket, SHUT_RDWR);
     close(clientWithPageSocket);
     return response;
@@ -96,7 +93,7 @@ InvalidationResponse* server_forward_invalidation(InvalidationRequest *request, 
             buffer4
     );
 
-    printf("dperez, Closing socket: %d\n", cx);
+    printf("Closing socket: %d\n", cx);
     shutdown(cx, SHUT_RDWR);
     close(cx);
     return response;

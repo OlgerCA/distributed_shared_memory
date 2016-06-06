@@ -12,7 +12,7 @@ ServerPageEntry* server_page_entry_new(long pageNumber, ClientEntry* owner) {
     ServerPageEntry* this = (ServerPageEntry*) g_malloc(sizeof(ServerPageEntry));
     this->pageNumber = pageNumber;
     this->owner = owner;
-    printf("dperez, The original owner of page %ld is %d\n", this->pageNumber, this->owner->clientId);
+    sprintf(logMessage, "The original owner of page %ld is %d\n", this->pageNumber, this->owner->clientId);
     this->clientsWithCopies = NULL;
     return this;
 }

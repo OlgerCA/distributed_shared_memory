@@ -59,7 +59,7 @@ void server_teardown() {
         server_page_entry_free(pages[i]);
     free(pages);
     for (i = 0; i < totalNumberOfClients; i++) {
-        printf("dperez, closing socket: %d\n", clients[i]->clientSocketId);
+        printf("Closing socket: %d\n", clients[i]->clientSocketId);
         shutdown(clients[i]->clientSocketId, SHUT_RDWR);
         close(clients[i]->clientSocketId);
         client_entry_free(clients[i]);

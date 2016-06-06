@@ -21,7 +21,7 @@ int server_open(int sin_port, int max_conn) {
 
 	int option = 1;
 	int cx = socket(AF_INET, SOCK_STREAM, 0);
-	printf("dperez, socket opened in server_open: %d\n", cx);
+	printf("Socket opened in server_open: %d\n", cx);
 	if (cx == -1) {
 		return cx;
 	}
@@ -33,12 +33,12 @@ int server_open(int sin_port, int max_conn) {
 
 	int addr_server_size = sizeof(struct sockaddr_in);
 	if (bind(cx, (struct sockaddr*) &addr_server, addr_server_size) == -1) {
-		fprintf(stderr, "dperez, ERROR IN bind: %s\n", strerror(errno));
+		fprintf(stderr, "ERROR IN bind: %s\n", strerror(errno));
 		return -1;
 	}
 
 	if (listen(cx, max_conn)) {
-		fprintf(stderr, "dperez, ERROR IN listen: %s\n", strerror(errno));
+		fprintf(stderr, "ERROR IN listen: %s\n", strerror(errno));
 		return -1;
 	}
 
@@ -50,7 +50,7 @@ int server_connect(char* s_addr, int sin_port) {
 
 	int option = 1;
 	int cx = socket(AF_INET, SOCK_STREAM, 0);
-	printf("dperez, socket opened in server_connect: %d\n", cx);
+	printf("Socket opened in server_connect: %d\n", cx);
 	if (cx == -1) {
 		fprintf(stderr, "%s\n", strerror(errno));
 		return cx;
@@ -81,7 +81,7 @@ void server_catch(int mainServerSocket, int numClients) {
 	int i;
 	for (i=0; i<numClients; i++) {
 		cx_new = accept(mainServerSocket, &addr_client, &addr_client_size);
-		printf("dperez, socket opened in accept de server_catch: %d \n", cx_new);
+		printf("Socket opened in accept de server_catch: %d \n", cx_new);
 		if (cx_new > cx_max) {
 			cx_max = cx_new;
 		}
@@ -115,7 +115,7 @@ void server_multiplex(int cx, int clients[], int numClients, int cx_max) {
 		}
 	} while (completedNodes < numClients);
 
-	printf("dperez, Closing socket: %d \n", cx);
+	printf("Closing socket: %d \n", cx);
 	shutdown(cx, SHUT_RDWR);
 	close(cx);
 }

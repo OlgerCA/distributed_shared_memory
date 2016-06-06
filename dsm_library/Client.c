@@ -23,7 +23,7 @@ int client_connect(char* s_addr, int sin_port) {
 
 	int option = 1;
 	int cx = socket(AF_INET, SOCK_STREAM, 0);
-	printf("dperez, socket opened in client_connect: %d\n", cx);
+	printf("Socket opened in client_connect: %d\n", cx);
 	if (cx == -1) {
 		return cx;
 	}
@@ -50,7 +50,7 @@ int client_listen(int sin_port, int max_conn) {
 	struct sockaddr_in addr_server;
 	int option = 1;
 	int cx = socket(AF_INET, SOCK_STREAM, 0);
-	printf("dperez, socket opened in client_listen: %d\n", cx);
+	printf("Socket opened in client_listen: %d\n", cx);
 	if (cx == -1) {
 		return cx;
 	}
@@ -86,7 +86,7 @@ void client_listener(int e) {
 
 		unsigned int addr_client_size = sizeof(struct sockaddr);
 		int cx = accept(clientSocket, &addr_client, &addr_client_size);
-		printf("dperez, socket opened in accept de clientListener: %d   trying to use socket: %d\n", cx, clientSocket);
+		printf("Socket opened in accept of clientListener: %d\n", cx);
 		if (cx == -1) {
 			fprintf(stdout, "Error accepting client port,  %s\n", strerror(errno));
 			return;
@@ -119,7 +119,6 @@ void client_attend(int cx) {
 		request->readOnlyMode = param3;
 		request->pageNumber = param4;
 
-		printf("dperez, Received: %s\n", message);
 		PageResponse* response = client_handle_page_request(request);
 
 		sprintf(
@@ -169,13 +168,13 @@ void client_attend(int cx) {
 		free(response);
 	}
 
-	printf("dperez, Closing socket: %d \n", cx);
+	printf("Closing socket: %d \n", cx);
 	shutdown(cx, SHUT_RDWR);
 	close(cx);
 }
 
 void client_closeSockets(){
-	printf("dperez, Closing socket: %d \n", socketToServer);
+	printf("Closing socket: %d \n", socketToServer);
 	int returnValue = shutdown(socketToServer, SHUT_RDWR);
 	if(returnValue != 0){
 		fprintf(stderr, "Error shutting down client port,  %s\n", strerror(errno));
@@ -185,7 +184,7 @@ void client_closeSockets(){
 		fprintf(stderr, "Error closing client port,  %s\n", strerror(errno));
 	}
 
-	printf("dperez, Closing socket: %d \n", clientSocket);
+	printf("Closing socket: %d \n", clientSocket);
 	returnValue = shutdown(clientSocket, SHUT_RDWR);
 	if(returnValue != 0){
 		fprintf(stderr, "Error shutting down server port,  %s\n", strerror(errno));

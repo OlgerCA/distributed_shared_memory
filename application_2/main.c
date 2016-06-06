@@ -5,7 +5,7 @@
 #include <sys/time.h>
 #include <time.h>
 
-#define ARRAY_SIZE 4096
+#define ARRAY_SIZE 8192
 #define MAX_VALUE 10000
 
 int isPrime(int n){
@@ -35,7 +35,7 @@ int main (int argc, char *argv[])
             numbers[i] = lrand48() % MAX_VALUE;;
             secuentialTotal += isPrime(numbers[i]);
         }
-        printf("The number of prime numbers secuentially found is %d\n", secuentialTotal);
+        printf("The number of prime numbers sequentially found is %d\n", secuentialTotal);
     }
 
 
@@ -45,11 +45,18 @@ int main (int argc, char *argv[])
     for (i = nid * assignedElements; i < (nid + 1) * assignedElements; i++) {
         partialResult += isPrime(numbers[i]);
     }
-    partialResults[nid] = partialResult;
 
     printf("The number of prime numbers found by: %d is: %d\n", nid, partialResult);
 
-    DSM_barrier(1);
+    for(i = 0; i < nodes; i++){
+        if(nid == i){
+            partialResults[nid] = partialResult;
+            printf("in node: %d partialResult[%i]: %d\n", nid, i, partialResults[nid]);
+        }
+        DSM_barrier(i+1);
+    }
+
+    DSM_barrier(nodes+2);
     if (nid == 0)  {
         int total = 0;
         for (i = 0; i < nodes; i++) {
@@ -60,7 +67,7 @@ int main (int argc, char *argv[])
         printf("The number of prime numbers found distributively in the array is: %d\n", total);
     }
 
-    DSM_barrier(2);
+    DSM_barrier(nodes+3);
     if (DSM_node_exit() != 0) {
         puts("Error when exiting from node...");
         return -1;
