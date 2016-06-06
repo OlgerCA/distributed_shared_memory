@@ -23,9 +23,15 @@ int main (int argc, char *argv[])
     int assignedElements = ARRAY_SIZE / nodes;
     for (i = nid * assignedElements; i < (nid + 1) * assignedElements; i++)
         partialResult += numbers[i];
-    partialResults[nid] = partialResult;
 
-    DSM_barrier(1);
+    for(i = 0; i < nodes; i++){
+        if(nid == i){
+            partialResults[nid] = partialResult;
+        }
+        DSM_barrier(i+1);
+    }
+
+    DSM_barrier(nodes + 2);
     if (nid == 0)  {
         int total = 0;
         for (i = 0; i < nodes; i++)
@@ -33,7 +39,7 @@ int main (int argc, char *argv[])
         printf("The final result is: %d\n", total);
     }
 
-    DSM_barrier(2);
+    DSM_barrier(nodes + 3);
     if (DSM_node_exit() != 0) {
         puts("Error when exiting from node...");
         return -1;
